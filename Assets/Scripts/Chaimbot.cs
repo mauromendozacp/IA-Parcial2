@@ -22,8 +22,9 @@ public class Chaimbot : MonoBehaviour
     #endregion
 
     #region PRIVATE_FIELDS
-    private TEAM team = TEAM.NONE;
     private float unit = 0f;
+    private Vector2Int index = Vector2Int.zero;
+    private TEAM team = TEAM.NONE;
 
     private BehaviourTree behaviourTree = null;
     #endregion
@@ -33,9 +34,10 @@ public class Chaimbot : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(float unit, TEAM team)
+    public void Init(float unit, Vector2Int index, TEAM team)
     {
         this.unit = unit;
+        this.index = index;
         this.team = team;
 
         SetView(team);
@@ -81,19 +83,13 @@ public class Chaimbot : MonoBehaviour
 
     private void SetView(TEAM team)
     {
-        if (team == TEAM.MALE)
+        for (int i = 0; i < maleViews.Length; i++)
         {
-            for (int i = 0; i < maleViews.Length; i++)
-            {
-                maleViews[i].SetActive(true);
-            }
+            maleViews[i].SetActive(team == TEAM.MALE);
         }
-        else if (team == TEAM.FEMALE)
+        for (int i = 0; i < femaleViews.Length; i++)
         {
-            for (int i = 0; i < femaleViews.Length; i++)
-            {
-                femaleViews[i].SetActive(true);
-            }
+            femaleViews[i].SetActive(team == TEAM.FEMALE);
         }
     }
     #endregion

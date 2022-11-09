@@ -2730,12 +2730,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca120b488fb3ca445843d3696b973d33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 50, y: 50}
+  size: {x: 100, y: 100}
   unit: 0.5
   turnsDelay: 5
-  chaimbotsCount: 50
+  chaimbotsCount: 100
   chaimbotPrefab: {fileID: 30823603432617951, guid: 26ae0efa2750154428b30b357e611e15, type: 3}
   chaimbotHolder: {fileID: 1255791821}
+  foodPrefab: {fileID: 3623620552971743550, guid: f3b5628689079484395e1612d7480f9c, type: 3}
+  foodHolder: {fileID: 248137541}
+  startPosY: 1.5
+  foodModels:
+  - {fileID: 11400000, guid: d83343afffb3f3f4f9828603d192cadd, type: 2}
+  - {fileID: 11400000, guid: 4710137e2d660ed40995fe0225d8fd9c, type: 2}
+  - {fileID: 11400000, guid: a990dc09e20ec5e479f31cdb9847c114, type: 2}
+  - {fileID: 11400000, guid: 430ac2c4297476f419a71c7c0bb4b92d, type: 2}
+  - {fileID: 11400000, guid: b8fa83e6879b76a44919964fddd8545d, type: 2}
 --- !u!4 &247856342
 Transform:
   m_ObjectHideFlags: 0
@@ -2750,6 +2759,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &248137540
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 248137541}
+  m_Layer: 0
+  m_Name: Food Holder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &248137541
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248137540}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &257441179
 PrefabInstance:
@@ -10917,7 +10957,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1255791821}
   m_Layer: 0
-  m_Name: ChaimbotsHolder
+  m_Name: Chaimbot Holder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
