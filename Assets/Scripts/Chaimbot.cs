@@ -50,7 +50,8 @@ public class Chaimbot : MonoBehaviour
 
             Vector3 dir = new Vector3(x, 0f, z);
             Vector3 movePosition = transform.position + dir * unit;
-            
+            transform.forward = dir;
+
             StartCoroutine(MoveLerp(movePosition));
         }
     }
