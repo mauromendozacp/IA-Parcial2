@@ -18,6 +18,10 @@ public class Food : MonoBehaviour
     private float floatingTimer = 0f;
     #endregion
 
+    #region PROPERTIES
+    public Vector2Int Index => index;
+    #endregion
+
     #region UNITY_CALLS
     private void Start()
     {

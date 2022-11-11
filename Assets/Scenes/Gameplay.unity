@@ -3013,7 +3013,6 @@ MonoBehaviour:
   size: {x: 100, y: 100}
   unit: 0.5
   turnsDelay: 2
-  chaimbotsCount: 100
   chaimbotPrefab: {fileID: 30823603432617951, guid: 26ae0efa2750154428b30b357e611e15, type: 3}
   chaimbotHolder: {fileID: 1255791821}
   foodPrefab: {fileID: 3623620552971743550, guid: f3b5628689079484395e1612d7480f9c, type: 3}
@@ -9665,7 +9664,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
-  m_LocalPosition: {x: 0, y: 15, z: -40}
+  m_LocalPosition: {x: 0, y: 20, z: -45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20937,8 +20936,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 1590632450}
     m_Modifications:
     - target: {fileID: 948625164852691424, guid: 5240e1ff5e2944d46b8de0e9a301e2e8, type: 3}
+      propertyPath: m_Value
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 948625164852691424, guid: 5240e1ff5e2944d46b8de0e9a301e2e8, type: 3}
       propertyPath: m_MaxValue
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 948625164852691424, guid: 5240e1ff5e2944d46b8de0e9a301e2e8, type: 3}
+      propertyPath: m_MinValue
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1499379781946208529, guid: 5240e1ff5e2944d46b8de0e9a301e2e8, type: 3}
       propertyPath: m_AnchorMax.y

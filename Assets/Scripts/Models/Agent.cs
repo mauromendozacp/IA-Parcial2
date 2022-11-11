@@ -36,12 +36,18 @@ public abstract class Agent : MonoBehaviour
 
         ProcessOutputs(outputs);
     }
+
+    public void SetGoodFitness()
+    {
+        fitness *= 2f;
+        genome.fitness = fitness;
+    }
     #endregion
 
     #region PROTECTED_METHODS
     protected virtual void OnReset()
     {
-        fitness = 1;
+        fitness = 1f;
     }
 
     protected abstract void ProcessInputs();

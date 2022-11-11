@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 
 using UnityEngine;
@@ -18,14 +19,21 @@ public class Chaimbot : Agent
     private Vector2Int index = Vector2Int.zero;
 
     private BehaviourTree behaviourTree = null;
+    
     private Food nearFood = null;
+    private int foodsConsumed = 0;
 
+    private Vector2Int moveIndex = Vector2Int.zero;
     private Vector3 startPosition = Vector3.zero;
     private Vector3 movePosition = Vector3.zero;
     #endregion
 
     #region CONSTANTS_FIELDS
     private const string speedKey = "speed";
+    #endregion
+
+    #region PROPERTIES
+    public Vector2Int Index { get => index; set => index = value; }
     #endregion
 
     #region PUBLIC_METHODS
@@ -37,13 +45,10 @@ public class Chaimbot : Agent
         SetView(team);
     }
 
-    public void SetIndex(Vector2Int index)
-    {
-        this.index = index;
-    }
-
     public void ResetPositions()
     {
+        moveIndex = index;
+
         startPosition = transform.position;
         movePosition = transform.position;
     }
@@ -58,6 +63,18 @@ public class Chaimbot : Agent
     public void SetNearFood(Food nearFood)
     {
         this.nearFood = nearFood;
+    }
+
+    public void Think()
+    {
+        OnThink();
+
+        if (index == nearFood.Index)
+        {
+            SetGoodFitness();
+
+            foodsConsumed++;
+        }
     }
     #endregion
 
@@ -80,6 +97,7 @@ public class Chaimbot : Agent
     {
         transform.position = movePosition;
         startPosition = transform.position;
+        index = moveIndex;
 
         if (outputs != null && outputs.Length >= 2)
         {
@@ -90,8 +108,15 @@ public class Chaimbot : Agent
             movePosition = transform.position + dir * unit;
             transform.forward = dir;
 
-            index += new Vector2Int((int)dir.x, (int)dir.z);
+            moveIndex = index + new Vector2Int((int)dir.x, (int)dir.z);
         }
+    }
+
+    protected override void OnReset()
+    {
+        base.OnReset();
+
+        foodsConsumed = 0;
     }
     #endregion
 

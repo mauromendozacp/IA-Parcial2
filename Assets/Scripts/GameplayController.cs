@@ -52,22 +52,19 @@ public class GameplayController : MonoBehaviour
         {
             turnsTimer += Time.deltaTime;
 
-            foreach (Chaimbot chaimbot in chaimbots)
-            {
-                chaimbot.Move(turnsTimer / turnsDelay);
-            }
+            UpdateMoveChaimbots(turnsTimer / turnsDelay);
 
             if (turnsTimer > turnsDelay)
             {
                 turnsTimer = 0f;
 
                 ProcessChaimbots();
+                ProcessFoods();
 
                 PopulationManager.Instance.turnsLeft--;
                 if (PopulationManager.Instance.turnsLeft <= 0)
                 {
-                    PopulationManager.Instance.Epoch(chaimbots.ToArray());
-                    SetChaimbotsPositions();
+                    ResetSimulation();
                 }
             }
         }
@@ -83,7 +80,9 @@ public class GameplayController : MonoBehaviour
         SpawnChaimbots();
         SpawnFoods();
 
-        PopulationManager.Instance.StartSimulation(chaimbots.ToArray());
+        List<Agent> agents = new List<Agent>();
+        agents.AddRange(chaimbots);
+        PopulationManager.Instance.StartSimulation(agents);
 
         SetChaimbotsPositions();
         ProcessChaimbots();
@@ -91,13 +90,87 @@ public class GameplayController : MonoBehaviour
         isRunning = true;
     }
 
+    private void ResetSimulation()
+    {
+        DestroyFoods();
+        SpawnFoods();
+
+        List<Agent> agents = new List<Agent>();
+        agents.AddRange(chaimbots);
+        PopulationManager.Instance.Epoch(agents);
+
+        SetChaimbotsPositions();
+        ProcessChaimbots();
+    }
+
+    private void UpdateMoveChaimbots(float lerp)
+    {
+        foreach (Chaimbot chaimbot in chaimbots)
+        {
+            if (!CheckLimitY(chaimbot.Index.y)) continue;
+
+            chaimbot.Move(lerp);
+
+            float limitX = size.x / 2f * unit;
+            Vector3 pos = chaimbot.transform.position;
+
+            if (pos.x > limitX)
+            {
+                pos.x -= limitX * 2;
+            }
+            else if (pos.x < -limitX)
+            {
+                pos.x += limitX * 2;
+            }
+
+            chaimbot.transform.position = pos;
+        }
+    }
+
     private void ProcessChaimbots()
     {
         foreach (Chaimbot chaimbot in chaimbots)
         {
+            if (!CheckLimitY(chaimbot.Index.y)) continue;
+
             chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
 
-            chaimbot.OnThink();
+            chaimbot.Think();
+
+            Vector2Int index = chaimbot.Index;
+            if (index.x > size.x)
+            {
+                index.x = 0;
+            }
+            else if (index.x < 0)
+            {
+                index.x = size.x;
+            }
+            chaimbot.Index = index;
+        }
+    }
+
+    private void ProcessFoods()
+    {
+        for (int i = 0; i < foods.Count; i++)
+        {
+            bool foodConsumed = false;
+
+            for (int j = 0; j < chaimbots.Count; j++)
+            {
+                if (foods[i].Index == chaimbots[j].Index)
+                {
+                    foodConsumed = true;
+                    break;
+                }
+            }
+
+            if (foodConsumed)
+            {
+                Destroy(foods[i].gameObject);
+                foods.RemoveAt(i);
+                i--;
+            }
         }
     }
     
@@ -186,7 +259,7 @@ public class GameplayController : MonoBehaviour
                 chaimbots[i].transform.forward = -transform.forward;
             }
 
-            chaimbots[i].SetIndex(index);
+            chaimbots[i].Index = index;
             chaimbots[i].ResetPositions();
         }
     }
@@ -232,6 +305,11 @@ public class GameplayController : MonoBehaviour
         return nearest;
     }
 
+    private bool CheckLimitY(int posY)
+    {
+        return posY >= 0 && posY <= size.y;
+    }
+
     private void PauseGame()
     {
         isRunning = !isRunning;
@@ -239,6 +317,8 @@ public class GameplayController : MonoBehaviour
 
     private void StopSimulation()
     {
+        isRunning = false;
+
         startView.Toggle(true);
         gameplayView.Toggle(false);
 
