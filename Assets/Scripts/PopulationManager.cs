@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 using UnityEditor;
 using UnityEngine;
 
@@ -9,9 +10,9 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     #region PUBLIC_FIELDS
     [SerializeField] private TextAsset brainDataJson = null;
 
-    [HideInInspector] public int PopulationCount = 40;
+    [HideInInspector] public int PopulationCount = 100;
 
-    [HideInInspector] public float GenerationDuration = 20.0f;
+    [HideInInspector] public int Turns = 20;
     [HideInInspector] public int IterationCount = 1;
 
     [HideInInspector] public int EliteCount = 4;
@@ -26,6 +27,11 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public float P = 0.5f;
 
     [HideInInspector] public int generation = 0;
+    [HideInInspector] public int turnsLeft = 0;
+
+    [HideInInspector] public float bestFitness = 0f;
+    [HideInInspector] public float avgFitness = 0f;
+    [HideInInspector] public float worstFitness = 0f;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -36,6 +42,47 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     #endregion
 
     #region PUBLIC_METHODS
+    public void StartSimulation(Agent[] agents)
+    {
+        genAlg = new GeneticAlgorithm(EliteCount, MutationChance, MutationRate);
+
+        generation = 0;
+        turnsLeft = Turns;
+
+        foreach (Agent agent in agents)
+        {
+            NeuralNetwork brain = CreateBrain();
+            Genome genome = new Genome(brain.GetTotalWeightsCount());
+
+            brain.SetWeights(genome.genome);
+            brains.Add(brain);
+            populations.Add(genome);
+
+            agent.SetBrain(genome, brain);
+        }
+    }
+
+    public void Epoch(Agent[] agents)
+    {
+        generation++;
+        turnsLeft = Turns;
+
+        bestFitness = GetBestFitness();
+        avgFitness = GetAvgFitness();
+        worstFitness = GetWorstFitness();
+
+        Genome[] newGenomes = genAlg.Epoch(populations.ToArray());
+        populations.Clear();
+        populations.AddRange(newGenomes);
+
+        for (int i = 0; i < PopulationCount; i++)
+        {
+            NeuralNetwork brain = brains[i];
+            brain.SetWeights(newGenomes[i].genome);
+            agents[i].SetBrain(newGenomes[i], brain);
+        }
+    }
+
     public float GetBestFitness()
     {
         float fitness = 0f;
@@ -99,6 +146,24 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         if (string.IsNullOrEmpty(path)) return;
 
         onStartGame?.Invoke();
+    }
+    #endregion
+
+    #region PRIVATE_METHODS
+    private NeuralNetwork CreateBrain()
+    {
+        NeuralNetwork brain = new NeuralNetwork();
+
+        brain.AddFirstNeuronLayer(InputsCount, Bias, P);
+
+        for (int i = 0; i < HiddenLayers; i++)
+        {
+            brain.AddNeuronLayer(NeuronsCountPerHL, Bias, P);
+        }
+
+        brain.AddNeuronLayer(OutputsCount, Bias, P);
+
+        return brain;
     }
     #endregion
 }

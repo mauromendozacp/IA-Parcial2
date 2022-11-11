@@ -3,8 +3,6 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-using UnityEditor;
-
 using TMPro;
 
 public class StartSimulationView : MonoBehaviour
@@ -15,8 +13,8 @@ public class StartSimulationView : MonoBehaviour
     [Header("Sliders Settings")]
     [SerializeField] private TMP_Text populationCountTxt = null;
     [SerializeField] private Slider populationCountSlider = null;
-    [SerializeField] private TMP_Text generationDurationTxt = null;
-    [SerializeField] private Slider generationDurationSlider = null;
+    [SerializeField] private TMP_Text turnsTxt = null;
+    [SerializeField] private Slider turnsSlider = null;
     [SerializeField] private TMP_Text eliteCountTxt = null;
     [SerializeField] private Slider eliteCountSlider = null;
     [SerializeField] private TMP_Text mutationChanceTxt = null;
@@ -39,7 +37,7 @@ public class StartSimulationView : MonoBehaviour
 
     #region PRIVATE_FIELDS
     private string populationText = string.Empty;
-    private string generationDurationText = string.Empty;
+    private string turnsText = string.Empty;
     private string elitesText = string.Empty;
     private string mutationChanceText = string.Empty;
     private string mutationRateText = string.Empty;
@@ -53,7 +51,7 @@ public class StartSimulationView : MonoBehaviour
     public void Init(Action onStartGame)
     {
         populationCountSlider.onValueChanged.AddListener(OnPopulationCountChange);
-        generationDurationSlider.onValueChanged.AddListener(OnGenerationDurationChange);
+        turnsSlider.onValueChanged.AddListener(OnTurnsChange);
         eliteCountSlider.onValueChanged.AddListener(OnEliteCountChange);
         mutationChanceSlider.onValueChanged.AddListener(OnMutationChanceChange);
         mutationRateSlider.onValueChanged.AddListener(OnMutationRateChange);
@@ -63,7 +61,7 @@ public class StartSimulationView : MonoBehaviour
         sigmoidSlopeSlider.onValueChanged.AddListener(OnSigmoidSlopeChange);
 
         populationText = populationCountTxt.text;
-        generationDurationText = generationDurationTxt.text;
+        turnsText = turnsTxt.text;
         elitesText = eliteCountTxt.text;
         mutationChanceText = mutationChanceTxt.text;
         mutationRateText = mutationRateTxt.text;
@@ -73,7 +71,7 @@ public class StartSimulationView : MonoBehaviour
         sigmoidSlopeText = sigmoidSlopeTxt.text;
 
         populationCountSlider.value = PopulationManager.Instance.PopulationCount;
-        generationDurationSlider.value = PopulationManager.Instance.GenerationDuration;
+        turnsSlider.value = PopulationManager.Instance.Turns;
         eliteCountSlider.value = PopulationManager.Instance.EliteCount;
         mutationChanceSlider.value = PopulationManager.Instance.MutationChance * 100.0f;
         mutationRateSlider.value = PopulationManager.Instance.MutationRate * 100.0f;
@@ -100,11 +98,11 @@ public class StartSimulationView : MonoBehaviour
         populationCountTxt.text = string.Format(populationText, PopulationManager.Instance.PopulationCount);
     }
 
-    private void OnGenerationDurationChange(float value)
+    private void OnTurnsChange(float value)
     {
-        PopulationManager.Instance.GenerationDuration = (int)value;
+        PopulationManager.Instance.Turns = (int)value;
 
-        generationDurationTxt.text = string.Format(generationDurationText, PopulationManager.Instance.GenerationDuration);
+        turnsTxt.text = string.Format(turnsText, PopulationManager.Instance.Turns);
     }
 
     private void OnEliteCountChange(float value)

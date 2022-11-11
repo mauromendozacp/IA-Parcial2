@@ -1,10 +1,9 @@
+using System;
+
 using UnityEngine;
 using UnityEngine.UI;
 
-using UnityEditor;
-
 using TMPro;
-using System;
 
 public class GameplaySimulationView : MonoBehaviour
 {
@@ -12,6 +11,7 @@ public class GameplaySimulationView : MonoBehaviour
     [Header("General Settings")]
     [SerializeField] private GameObject holder = null;
     [SerializeField] private TMP_Text generationsCountTxt = null;
+    [SerializeField] private TMP_Text turnsLeftTxt = null;
     [SerializeField] private TMP_Text bestFitnessTxt = null;
     [SerializeField] private TMP_Text avgFitnessTxt = null;
     [SerializeField] private TMP_Text worstFitnessTxt = null;
@@ -27,6 +27,7 @@ public class GameplaySimulationView : MonoBehaviour
 
     #region PRIVATE_FIELDS
     private string generationsCountText = string.Empty;
+    private string turnsLeftText = string.Empty;
     private string bestFitnessText = string.Empty;
     private string avgFitnessText = string.Empty;
     private string worstFitnessText = string.Empty;
@@ -38,9 +39,10 @@ public class GameplaySimulationView : MonoBehaviour
     {
         timerTxt.text = string.Format(timerText, PopulationManager.Instance.IterationCount);
         generationsCountTxt.text = string.Format(generationsCountText, PopulationManager.Instance.generation);
-        bestFitnessTxt.text = string.Format(bestFitnessText, PopulationManager.Instance.GetBestFitness());
-        avgFitnessTxt.text = string.Format(avgFitnessText, PopulationManager.Instance.GetAvgFitness());
-        worstFitnessTxt.text = string.Format(worstFitnessText, PopulationManager.Instance.GetWorstFitness());
+        turnsLeftTxt.text = string.Format(turnsLeftText, PopulationManager.Instance.turnsLeft);
+        bestFitnessTxt.text = string.Format(bestFitnessText, PopulationManager.Instance.bestFitness);
+        avgFitnessTxt.text = string.Format(avgFitnessText, PopulationManager.Instance.avgFitness);
+        worstFitnessTxt.text = string.Format(worstFitnessText, PopulationManager.Instance.worstFitness);
     }
     #endregion
 
@@ -51,6 +53,7 @@ public class GameplaySimulationView : MonoBehaviour
         timerText = timerTxt.text;
 
         generationsCountText = generationsCountTxt.text;
+        turnsLeftText = turnsLeftTxt.text;
         bestFitnessText = bestFitnessTxt.text;
         avgFitnessText = avgFitnessTxt.text;
         worstFitnessText = worstFitnessTxt.text;

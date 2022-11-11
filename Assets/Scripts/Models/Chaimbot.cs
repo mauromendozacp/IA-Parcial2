@@ -2,17 +2,9 @@ using System.Collections;
 
 using UnityEngine;
 
-public enum TEAM
-{
-    NONE,
-    MALE,
-    FEMALE
-}
-
-public class Chaimbot : MonoBehaviour
+public class Chaimbot : Agent
 {
     #region EXPOSED_FIELDS
-    [SerializeField] private float moveDelay = 0f;
     [SerializeField] private Animator animator = null;
     [SerializeField] private AnimationCurve curve = null;
 
@@ -24,9 +16,12 @@ public class Chaimbot : MonoBehaviour
     #region PRIVATE_FIELDS
     private float unit = 0f;
     private Vector2Int index = Vector2Int.zero;
-    private TEAM team = TEAM.NONE;
 
     private BehaviourTree behaviourTree = null;
+    private Food nearFood = null;
+
+    private Vector3 startPosition = Vector3.zero;
+    private Vector3 movePosition = Vector3.zero;
     #endregion
 
     #region CONSTANTS_FIELDS
@@ -34,63 +29,88 @@ public class Chaimbot : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(float unit, Vector2Int index, TEAM team)
+    public void Init(float unit, TEAM team)
     {
         this.unit = unit;
-        this.index = index;
         this.team = team;
 
         SetView(team);
     }
 
-    public void ProcessOutputs(float[] outputs)
+    public void SetIndex(Vector2Int index)
     {
+        this.index = index;
+    }
+
+    public void ResetPositions()
+    {
+        startPosition = transform.position;
+        movePosition = transform.position;
+    }
+
+    public void Move(float lerp)
+    {
+        transform.position = Vector3.Lerp(startPosition, movePosition, lerp);
+
+        animator.SetFloat(speedKey, curve.Evaluate(lerp));
+    }
+
+    public void SetNearFood(Food nearFood)
+    {
+        this.nearFood = nearFood;
+    }
+    #endregion
+
+    #region OVERRIDE_METHODS
+    protected override void ProcessInputs()
+    {
+        if (nearFood != null)
+        {
+            Vector3 foodPosition = nearFood.transform.position;
+            Vector3 foodDirection = GetDirToFood(foodPosition);
+
+            inputs[0] = foodPosition.x;
+            inputs[1] = foodPosition.z;
+            inputs[2] = foodDirection.x;
+            inputs[3] = foodDirection.z;
+        }
+    }
+
+    protected override void ProcessOutputs(float[] outputs)
+    {
+        transform.position = movePosition;
+        startPosition = transform.position;
+
         if (outputs != null && outputs.Length >= 2)
         {
-            float x = outputs[0] < 0f ? 1f : -1f;
-            float z = outputs[1] < 0f ? 1f : -1f;
+            bool vertical = outputs[0] < 0.5f;
+            float positive = outputs[1] < 0.5f ? -1f : 1f;
 
-            Vector3 dir = new Vector3(x, 0f, z);
-            Vector3 movePosition = transform.position + dir * unit;
+            Vector3 dir = new Vector3(vertical ? positive : 0f, 0f, !vertical ? positive : 0f);
+            movePosition = transform.position + dir * unit;
             transform.forward = dir;
 
-            StartCoroutine(MoveLerp(movePosition));
+            index += new Vector2Int((int)dir.x, (int)dir.z);
         }
     }
     #endregion
 
     #region PRIVATE_METHODS
-    private IEnumerator MoveLerp(Vector3 movePosition)
-    {
-        float timer = 0f;
-        Vector3 startPosition = transform.position;
-
-        while (timer < moveDelay)
-        {
-            timer += Time.deltaTime;
-
-            float lerp = curve.Evaluate(timer);
-            transform.position = Vector3.Lerp(startPosition, movePosition, lerp);
-
-            animator.SetFloat(speedKey, lerp < 0.5f ? lerp : 1f - lerp);
-
-            yield return new WaitForEndOfFrame();
-        }
-
-        transform.position = movePosition;
-        yield return null;
-    }
-
     private void SetView(TEAM team)
     {
         for (int i = 0; i < maleViews.Length; i++)
         {
-            maleViews[i].SetActive(team == TEAM.MALE);
+            maleViews[i].SetActive(team == TEAM.A);
         }
         for (int i = 0; i < femaleViews.Length; i++)
         {
-            femaleViews[i].SetActive(team == TEAM.FEMALE);
+            femaleViews[i].SetActive(team == TEAM.B);
         }
+    }
+
+    private Vector3 GetDirToFood(Vector3 foodPosition)
+    {
+        return (foodPosition - transform.position).normalized;
     }
     #endregion
 }

@@ -12,7 +12,6 @@ public class GameplayController : MonoBehaviour
     [SerializeField] private float turnsDelay = 0f;
 
     [Header("Chaimbot Settings")]
-    [SerializeField] private int chaimbotsCount = 0;
     [SerializeField] private GameObject chaimbotPrefab = null;
     [SerializeField] private Transform chaimbotHolder = null;
 
@@ -48,6 +47,30 @@ public class GameplayController : MonoBehaviour
     private void Update()
     {
         if (!isRunning) return;
+
+        for (int i = 0; i < Mathf.Clamp(PopulationManager.Instance.IterationCount / 100.0f * 50f, 1f, 50f); i++)
+        {
+            turnsTimer += Time.deltaTime;
+
+            foreach (Chaimbot chaimbot in chaimbots)
+            {
+                chaimbot.Move(turnsTimer / turnsDelay);
+            }
+
+            if (turnsTimer > turnsDelay)
+            {
+                turnsTimer = 0f;
+
+                ProcessChaimbots();
+
+                PopulationManager.Instance.turnsLeft--;
+                if (PopulationManager.Instance.turnsLeft <= 0)
+                {
+                    PopulationManager.Instance.Epoch(chaimbots.ToArray());
+                    SetChaimbotsPositions();
+                }
+            }
+        }
     }
     #endregion
 
@@ -59,33 +82,39 @@ public class GameplayController : MonoBehaviour
 
         SpawnChaimbots();
         SpawnFoods();
+
+        PopulationManager.Instance.StartSimulation(chaimbots.ToArray());
+
+        SetChaimbotsPositions();
+        ProcessChaimbots();
+
+        isRunning = true;
     }
 
+    private void ProcessChaimbots()
+    {
+        foreach (Chaimbot chaimbot in chaimbots)
+        {
+            chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
+
+            chaimbot.OnThink();
+        }
+    }
+    
     private void SpawnChaimbots()
     {
-        Vector3 startPosition = new Vector3(-size.x / 2, 0f, -size.y / 2);
-
-        for (int i = 0; i < chaimbotsCount; i++)
+        for (int i = 0; i < PopulationManager.Instance.PopulationCount; i++)
         {
             GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
             Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            Vector2Int index;
             
-            if (i < chaimbotsCount / 2)
+            if (i < PopulationManager.Instance.PopulationCount / 2)
             {
-                index = new Vector2Int(i * 2, 0);
-
-                chaimbot.transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
-                chaimbot.transform.forward = transform.forward;
-                chaimbot.Init(unit, index, TEAM.MALE);
+                chaimbot.Init(unit, TEAM.A);
             }
             else
             {
-                index = new Vector2Int((i - chaimbotsCount / 2) * 2, size.y);
-
-                chaimbot.transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
-                chaimbot.transform.forward = -transform.forward;
-                chaimbot.Init(unit, index, TEAM.FEMALE);
+                chaimbot.Init(unit, TEAM.B);
             }
 
             chaimbots.Add(chaimbot);
@@ -96,7 +125,7 @@ public class GameplayController : MonoBehaviour
     {
         List<Vector2Int> foodUsedIndexs = new List<Vector2Int>();
 
-        for (int i = 0; i < chaimbotsCount; i++)
+        for (int i = 0; i < PopulationManager.Instance.PopulationCount; i++)
         {
             GameObject foodGO = Instantiate(foodPrefab, foodHolder);
             Food food = foodGO.GetComponent<Food>();
@@ -134,6 +163,34 @@ public class GameplayController : MonoBehaviour
         foods.Clear();
     }
 
+    private void SetChaimbotsPositions()
+    {
+        Vector3 startPosition = new Vector3(-size.x / 2, 0f, -size.y / 2);
+
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            Vector2Int index;
+
+            if (i < chaimbots.Count / 2)
+            {
+                index = new Vector2Int(i * 2, 0);
+
+                chaimbots[i].transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
+                chaimbots[i].transform.forward = transform.forward;
+            }
+            else
+            {
+                index = new Vector2Int((i - chaimbots.Count / 2) * 2, size.y);
+
+                chaimbots[i].transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
+                chaimbots[i].transform.forward = -transform.forward;
+            }
+
+            chaimbots[i].SetIndex(index);
+            chaimbots[i].ResetPositions();
+        }
+    }
+
     private Vector2Int GetRandomIndex(params Vector2Int[] usedIndexs)
     {
         Vector2Int index;
@@ -155,6 +212,24 @@ public class GameplayController : MonoBehaviour
         } while (repeat);
 
         return index;
+    }
+
+    private Food GetNearFood(Vector3 position)
+    {
+        Food nearest = foods[0];
+        float distance = (position - nearest.transform.position).sqrMagnitude;
+
+        foreach (Food food in foods)
+        {
+            float newDist = (food.transform.position - position).sqrMagnitude;
+            if (newDist < distance)
+            {
+                nearest = food;
+                distance = newDist;
+            }
+        }
+
+        return nearest;
     }
 
     private void PauseGame()
