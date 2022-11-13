@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-
 using UnityEngine;
 
 public class Chaimbot : Agent
@@ -34,6 +31,8 @@ public class Chaimbot : Agent
 
     #region PROPERTIES
     public Vector2Int Index { get => index; set => index = value; }
+    public int FoodsConsumed { get => foodsConsumed; }
+    public TEAM Team { get => team; }
     #endregion
 
     #region PUBLIC_METHODS

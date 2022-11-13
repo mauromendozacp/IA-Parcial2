@@ -19,7 +19,7 @@ public class CameraController : MonoBehaviour
     #region PRIVATE_FIELDS
     private CAMERA_MODE mode = CAMERA_MODE.LOCKED;
 
-    private Agent followAgent = null;
+    private Chaimbot followChaimbot= null;
     #endregion
 
     #region UNITY_CALLS
@@ -29,7 +29,9 @@ public class CameraController : MonoBehaviour
         {
             case CAMERA_MODE.LOCKED: Locked();
                 break;
-            case CAMERA_MODE.FOLLOW: Follow();
+            case CAMERA_MODE.FOLLOW:
+                Follow();
+                PopulationManager.Instance.UpdateFollowChaimbotData(followChaimbot);
                 break;
             case CAMERA_MODE.FREE: Free();
                 break;
@@ -48,11 +50,16 @@ public class CameraController : MonoBehaviour
         this.mode = mode;
 
         Cursor.lockState = mode == CAMERA_MODE.FREE ? CursorLockMode.Locked : CursorLockMode.None;
+
+        if (mode != CAMERA_MODE.FOLLOW)
+        {
+            PopulationManager.Instance.UpdateFollowChaimbotData(null);
+        }
     }
 
-    public void SetFollowAgent(Agent agent)
+    public void SetFollowAgent(Chaimbot chaimbot)
     {
-        followAgent = agent;
+        followChaimbot = chaimbot;
     }
     #endregion
 
@@ -65,12 +72,12 @@ public class CameraController : MonoBehaviour
 
     private void Follow()
     {
-        if (mode == CAMERA_MODE.FOLLOW && followAgent != null)
+        if (mode == CAMERA_MODE.FOLLOW && followChaimbot != null)
         {
-            Vector3 followPosition = followAgent.transform.position + playerOffset;
+            Vector3 followPosition = followChaimbot.transform.position + playerOffset;
             transform.position = Vector3.Slerp(transform.position, followPosition, smooth);
 
-            transform.LookAt(followAgent.transform);
+            transform.LookAt(followChaimbot.transform);
         }
     }
 

@@ -335,11 +335,14 @@ public class GameplayController : MonoBehaviour
                 currentFollowAgent = chaimbots.Count - 1;
             }
 
-            Agent followAgent = chaimbots[currentFollowAgent];
-            cameraController.SetFollowAgent(followAgent);
-            cameraController.SetMode(CAMERA_MODE.FOLLOW);
-
             currentFollowAgent += increment ? 1 : -1;
+
+            Chaimbot followChaimbot = chaimbots[currentFollowAgent];
+            PopulationManager.Instance.agentNro = currentFollowAgent;
+            PopulationManager.Instance.agentTeam = followChaimbot.Team.ToString();
+
+            cameraController.SetFollowAgent(followChaimbot);
+            cameraController.SetMode(CAMERA_MODE.FOLLOW);
         }
         else
         {

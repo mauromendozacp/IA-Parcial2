@@ -32,6 +32,13 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public float bestFitness = 0f;
     [HideInInspector] public float avgFitness = 0f;
     [HideInInspector] public float worstFitness = 0f;
+
+    [HideInInspector] public int agentNro = 0;
+    [HideInInspector] public string agentTeam = string.Empty;
+    [HideInInspector] public float agentFitness = 0f;
+    [HideInInspector] public int foodsConsumed = 0;
+    [HideInInspector] public int row = 0;
+    [HideInInspector] public int column = 0;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -51,7 +58,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         PopulationCount = 100;
 
-        Turns = 20;
+        Turns = 50;
         IterationCount = 1;
 
         EliteCount = 4;
@@ -71,6 +78,13 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         bestFitness = 0f;
         avgFitness = 0f;
         worstFitness = 0f;
+
+        agentNro = 0;
+        agentTeam = string.Empty;
+        agentFitness = 0f;
+        foodsConsumed = 0;
+        row = 0;
+        column = 0;
     }
     #endregion
 
@@ -116,6 +130,26 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
             NeuralNetwork brain = brains[i];
             brain.SetWeights(newGenomes[i].genome);
             agents[i].SetBrain(newGenomes[i], brain);
+        }
+    }
+
+    public void UpdateFollowChaimbotData(Chaimbot chaimbot)
+    {
+        if (chaimbot != null)
+        {
+            foodsConsumed = chaimbot.FoodsConsumed;
+            row = chaimbot.Index.x;
+            column = chaimbot.Index.y;
+            agentFitness = chaimbot.Fitness;
+        }
+        else
+        {
+            agentNro = 0;
+            foodsConsumed = 0;
+            row = 0;
+            column = 0;
+            agentTeam = TEAM.NONE.ToString();
+            agentFitness = 0f;
         }
     }
 

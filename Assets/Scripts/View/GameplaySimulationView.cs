@@ -18,6 +18,14 @@ public class GameplaySimulationView : MonoBehaviour
     [SerializeField] private TMP_Text timerTxt = null;
     [SerializeField] private Slider timerSlider = null;
 
+    [Header("Chaimbot Info Settings")]
+    [SerializeField] private TMP_Text agentNroTxt = null;
+    [SerializeField] private TMP_Text agentTeamTxt = null;
+    [SerializeField] private TMP_Text agentFitnessTxt = null;
+    [SerializeField] private TMP_Text foodsConsumedTxt = null;
+    [SerializeField] private TMP_Text rowTxt = null;
+    [SerializeField] private TMP_Text columnTxt = null;
+
     [Header("Buttons Settings")]
     [SerializeField] private Button pauseBtn = null;
     [SerializeField] private Button saveBtn = null;
@@ -37,6 +45,13 @@ public class GameplaySimulationView : MonoBehaviour
     private string avgFitnessText = string.Empty;
     private string worstFitnessText = string.Empty;
     private string timerText = string.Empty;
+
+    private string agentNroText = string.Empty;
+    private string agentTeamText = string.Empty;
+    private string agentFitnessText = string.Empty;
+    private string foodsConsumedText = string.Empty;
+    private string rowText = string.Empty;
+    private string columnText = string.Empty;
     #endregion
 
     #region UNITY_CALLS
@@ -48,6 +63,13 @@ public class GameplaySimulationView : MonoBehaviour
         bestFitnessTxt.text = string.Format(bestFitnessText, PopulationManager.Instance.bestFitness);
         avgFitnessTxt.text = string.Format(avgFitnessText, PopulationManager.Instance.avgFitness);
         worstFitnessTxt.text = string.Format(worstFitnessText, PopulationManager.Instance.worstFitness);
+
+        agentNroTxt.text = string.Format(agentNroText, PopulationManager.Instance.agentNro);
+        agentTeamTxt.text = string.Format(agentTeamText, PopulationManager.Instance.agentTeam);
+        agentFitnessTxt.text = string.Format(agentFitnessText, PopulationManager.Instance.agentFitness);
+        foodsConsumedTxt.text = string.Format(foodsConsumedText, PopulationManager.Instance.foodsConsumed);
+        rowTxt.text = string.Format(rowText, PopulationManager.Instance.row);
+        columnTxt.text = string.Format(columnText, PopulationManager.Instance.column);
     }
     #endregion
 
@@ -62,6 +84,13 @@ public class GameplaySimulationView : MonoBehaviour
         bestFitnessText = bestFitnessTxt.text;
         avgFitnessText = avgFitnessTxt.text;
         worstFitnessText = worstFitnessTxt.text;
+
+        agentNroText = agentNroTxt.text;
+        agentTeamText = agentTeamTxt.text;
+        agentFitnessText = agentFitnessTxt.text;
+        foodsConsumedText = foodsConsumedTxt.text;
+        rowText = rowTxt.text;
+        columnText = columnTxt.text;
 
         pauseBtn.onClick.AddListener(() => onPauseGame?.Invoke());
         saveBtn.onClick.AddListener(() => PopulationManager.Instance.SaveData());

@@ -18,6 +18,10 @@ public abstract class Agent : MonoBehaviour
     protected float fitness = 1f;
     #endregion
 
+    #region PROPERTIES
+    public float Fitness { get => fitness; }
+    #endregion
+
     #region PUBLIC_METHODS
     public void SetBrain(Genome genome, NeuralNetwork brain)
     {
