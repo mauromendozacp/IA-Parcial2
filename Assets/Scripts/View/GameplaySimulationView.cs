@@ -23,6 +23,11 @@ public class GameplaySimulationView : MonoBehaviour
     [SerializeField] private Button saveBtn = null;
     [SerializeField] private Button stopBtn = null;
     [SerializeField] private Button exitBtn = null;
+
+    [SerializeField] private Button lockedBtn = null;
+    [SerializeField] private Button freeBtn = null;
+    [SerializeField] private Button previusBtn = null;
+    [SerializeField] private Button nextBtn = null;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -47,7 +52,7 @@ public class GameplaySimulationView : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(Action onPauseGame, Action onStopSimulation, Action onExitGame)
+    public void Init(Action onPauseGame, Action onStopSimulation, Action onExitGame, Action onLockedCamera, Action<bool> onFollowCamera, Action onFreeCamera)
     {
         timerSlider.onValueChanged.AddListener(OnTimerChange);
         timerText = timerTxt.text;
@@ -62,6 +67,11 @@ public class GameplaySimulationView : MonoBehaviour
         saveBtn.onClick.AddListener(() => PopulationManager.Instance.SaveData());
         stopBtn.onClick.AddListener(() => onStopSimulation?.Invoke());
         exitBtn.onClick.AddListener(() => onExitGame?.Invoke());
+
+        lockedBtn.onClick.AddListener(() => onLockedCamera?.Invoke());
+        freeBtn.onClick.AddListener(() => onFreeCamera?.Invoke());
+        previusBtn.onClick.AddListener(() => onFollowCamera?.Invoke(false));
+        nextBtn.onClick.AddListener(() => onFollowCamera?.Invoke(true));
     }
 
     public void Toggle(bool status)

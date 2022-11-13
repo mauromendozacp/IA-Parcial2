@@ -7,6 +7,7 @@ public class GameplayController : MonoBehaviour
 {
     #region EXPOSED_FIELDS
     [Header("General Settings")]
+    [SerializeField] private CameraController cameraController = null;
     [SerializeField] private Vector2Int size = Vector2Int.zero;
     [SerializeField] private float unit = 0f;
     [SerializeField] private float turnsDelay = 0f;
@@ -33,13 +34,14 @@ public class GameplayController : MonoBehaviour
     private float turnsTimer = 0f;
     private bool isRunning = false;
     private bool isLoop = false;
+    private int currentFollowAgent = 0;
     #endregion
 
     #region UNITY_CALLS
     private void Start()
     {
         startView.Init(StartGame);
-        gameplayView.Init(PauseGame, StopSimulation, ExitGame);
+        gameplayView.Init(PauseGame, StopSimulation, ExitGame, LockedCamera, FollowCamera, FreeCamera);
 
         startView.Toggle(true);
         gameplayView.Toggle(false);
@@ -91,6 +93,7 @@ public class GameplayController : MonoBehaviour
 
         isRunning = true;
         isLoop = dataLoaded;
+        currentFollowAgent = 0;
     }
 
     private void ResetSimulation()
@@ -313,6 +316,44 @@ public class GameplayController : MonoBehaviour
         return posY >= 0 && posY <= size.y;
     }
 
+    #region CAMERA
+    private void LockedCamera()
+    {
+        cameraController.SetMode(CAMERA_MODE.LOCKED);
+    }
+
+    private void FollowCamera(bool increment)
+    {
+        if (chaimbots.Count > 0)
+        {
+            if (currentFollowAgent >= chaimbots.Count)
+            {
+                currentFollowAgent = 0;
+            }
+            if (currentFollowAgent < 0)
+            {
+                currentFollowAgent = chaimbots.Count - 1;
+            }
+
+            Agent followAgent = chaimbots[currentFollowAgent];
+            cameraController.SetFollowAgent(followAgent);
+            cameraController.SetMode(CAMERA_MODE.FOLLOW);
+
+            currentFollowAgent += increment ? 1 : -1;
+        }
+        else
+        {
+            LockedCamera();
+        }
+    }
+
+    private void FreeCamera()
+    {
+        cameraController.SetMode(CAMERA_MODE.FREE);
+    }
+    #endregion
+
+    #region BUTTONS_CALLBACKS
     private void PauseGame()
     {
         isRunning = !isRunning;
@@ -333,5 +374,6 @@ public class GameplayController : MonoBehaviour
     {
         Application.Quit();
     }
+    #endregion
     #endregion
 }
