@@ -32,6 +32,7 @@ public class GameplayController : MonoBehaviour
 
     private float turnsTimer = 0f;
     private bool isRunning = false;
+    private bool isLoop = false;
     #endregion
 
     #region UNITY_CALLS
@@ -61,8 +62,9 @@ public class GameplayController : MonoBehaviour
                 ProcessChaimbots();
                 ProcessFoods();
 
-                PopulationManager.Instance.turnsLeft--;
-                if (PopulationManager.Instance.turnsLeft <= 0)
+                PopulationManager.Instance.turnsLeft += isLoop ? 1 : -1;
+
+                if (PopulationManager.Instance.turnsLeft <= 0 && !isLoop)
                 {
                     ResetSimulation();
                 }
@@ -72,7 +74,7 @@ public class GameplayController : MonoBehaviour
     #endregion
 
     #region PRIVATE_METHODS
-    private void StartGame()
+    private void StartGame(bool dataLoaded)
     {
         startView.Toggle(false);
         gameplayView.Toggle(true);
@@ -82,12 +84,13 @@ public class GameplayController : MonoBehaviour
 
         List<Agent> agents = new List<Agent>();
         agents.AddRange(chaimbots);
-        PopulationManager.Instance.StartSimulation(agents);
+        PopulationManager.Instance.StartSimulation(agents, dataLoaded);
 
         SetChaimbotsPositions();
         ProcessChaimbots();
 
         isRunning = true;
+        isLoop = dataLoaded;
     }
 
     private void ResetSimulation()

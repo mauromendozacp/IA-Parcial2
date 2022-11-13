@@ -48,7 +48,7 @@ public class StartSimulationView : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(Action onStartGame)
+    public void Init(Action<bool> onStartGame)
     {
         populationCountSlider.onValueChanged.AddListener(OnPopulationCountChange);
         turnsSlider.onValueChanged.AddListener(OnTurnsChange);
@@ -80,7 +80,7 @@ public class StartSimulationView : MonoBehaviour
         biasSlider.value = PopulationManager.Instance.Bias;
         sigmoidSlopeSlider.value = PopulationManager.Instance.P;
 
-        startButton.onClick.AddListener(() => onStartGame?.Invoke());
+        startButton.onClick.AddListener(() => { onStartGame?.Invoke(false); });
         loadButton.onClick.AddListener(() => PopulationManager.Instance.LoadData(onStartGame));
     }
 

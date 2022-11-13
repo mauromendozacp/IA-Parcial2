@@ -5,7 +5,7 @@ public class Genome
 {
 	#region PUBLIC_FIELDS
 	public float[] genome = null;
-	public float fitness = 0;
+	[System.NonSerialized] public float fitness = 0;
 	#endregion
 
 	#region CONSTRUCTORS
