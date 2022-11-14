@@ -80,6 +80,16 @@ public class StartSimulationView : MonoBehaviour
         biasSlider.value = PopulationManager.Instance.Bias;
         sigmoidSlopeSlider.value = PopulationManager.Instance.P;
 
+        OnPopulationCountChange(populationCountSlider.value);
+        OnTurnsChange(turnsSlider.value);
+        OnEliteCountChange(eliteCountSlider.value);
+        OnMutationChanceChange(mutationChanceSlider.value);
+        OnMutationRateChange(mutationRateSlider.value);
+        OnHiddenLayersCountChange(hiddenLayersCountSlider.value);
+        OnNeuronsPerHLChange(neuronsPerHLSlider.value);
+        OnBiasChange(biasSlider.value);
+        OnSigmoidSlopeChange(sigmoidSlopeSlider.value);
+
         startButton.onClick.AddListener(() => { onStartGame?.Invoke(false); });
         loadButton.onClick.AddListener(() => PopulationManager.Instance.LoadData(onStartGame));
     }
