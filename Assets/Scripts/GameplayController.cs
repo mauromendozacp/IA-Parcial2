@@ -93,7 +93,7 @@ public class GameplayController : MonoBehaviour
 
         isRunning = true;
         isLoop = dataLoaded;
-        currentFollowAgent = 0;
+        currentFollowAgent = -1;
     }
 
     private void ResetSimulation()
@@ -116,20 +116,6 @@ public class GameplayController : MonoBehaviour
             if (!CheckLimitY(chaimbot.Index.y)) continue;
 
             chaimbot.Move(lerp);
-
-            float limitX = size.x / 2f * unit;
-            Vector3 pos = chaimbot.transform.position;
-
-            if (pos.x > limitX)
-            {
-                pos.x -= limitX * 2;
-            }
-            else if (pos.x < -limitX)
-            {
-                pos.x += limitX * 2;
-            }
-
-            chaimbot.transform.position = pos;
         }
     }
 
@@ -141,9 +127,19 @@ public class GameplayController : MonoBehaviour
 
             chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
 
-            chaimbot.Think();
+            float limitX = size.x / 2f * unit;
+            Vector3 pos = chaimbot.MovePosition;
+            if (pos.x > limitX)
+            {
+                pos.x -= limitX * 2;
+            }
+            else if (pos.x < -limitX)
+            {
+                pos.x += limitX * 2;
+            }
+            chaimbot.MovePosition = pos;
 
-            Vector2Int index = chaimbot.Index;
+            Vector2Int index = chaimbot.MoveIndex;
             if (index.x > size.x)
             {
                 index.x = 0;
@@ -152,7 +148,9 @@ public class GameplayController : MonoBehaviour
             {
                 index.x = size.x;
             }
-            chaimbot.Index = index;
+            chaimbot.MoveIndex = index;
+
+            chaimbot.Think();
         }
     }
 
@@ -326,6 +324,8 @@ public class GameplayController : MonoBehaviour
     {
         if (chaimbots.Count > 0)
         {
+            currentFollowAgent += increment ? 1 : -1;
+
             if (currentFollowAgent >= chaimbots.Count)
             {
                 currentFollowAgent = 0;
@@ -334,8 +334,6 @@ public class GameplayController : MonoBehaviour
             {
                 currentFollowAgent = chaimbots.Count - 1;
             }
-
-            currentFollowAgent += increment ? 1 : -1;
 
             Chaimbot followChaimbot = chaimbots[currentFollowAgent];
             PopulationManager.Instance.agentNro = currentFollowAgent;

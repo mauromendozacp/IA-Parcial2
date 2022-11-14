@@ -16,7 +16,7 @@ public class Chaimbot : Agent
     private Vector2Int index = Vector2Int.zero;
 
     private BehaviourTree behaviourTree = null;
-    
+
     private Food nearFood = null;
     private int foodsConsumed = 0;
 
@@ -31,6 +31,8 @@ public class Chaimbot : Agent
 
     #region PROPERTIES
     public Vector2Int Index { get => index; set => index = value; }
+    public Vector2Int MoveIndex { get => moveIndex; set => moveIndex = value; }
+    public Vector3 MovePosition { get => movePosition; set => movePosition = value; }
     public int FoodsConsumed { get => foodsConsumed; }
     public TEAM Team { get => team; }
     #endregion
