@@ -129,6 +129,7 @@ public class GameplayController : MonoBehaviour
             if (!CheckLimitY(chaimbot.Index.y)) continue;
 
             chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
+            chaimbot.Think();
 
             float limitX = size / 2f * unit;
             Vector3 pos = chaimbot.MovePosition;
@@ -152,8 +153,6 @@ public class GameplayController : MonoBehaviour
                 index.x = size;
             }
             chaimbot.MoveIndex = index;
-
-            chaimbot.Think();
         }
     }
 
@@ -286,7 +285,7 @@ public class GameplayController : MonoBehaviour
             }
             else
             {
-                index = new Vector2Int(bIndex - chaimbots.Count / 2, size);
+                index = new Vector2Int(bIndex, size);
                 bIndex++;
             }
 
@@ -305,8 +304,8 @@ public class GameplayController : MonoBehaviour
         {
             repeat = false;
 
-            int x = Random.Range(0, size);
-            int y = Random.Range(0, size);
+            int x = Random.Range(1, size - 1);
+            int y = Random.Range(1, size - 1);
             index = new Vector2Int(x, y);
 
             if (usedIndexs != null && usedIndexs.Length > 0)
@@ -409,11 +408,13 @@ public class GameplayController : MonoBehaviour
     {
         isRunning = false;
 
-        startView.Toggle(true);
-        gameplayView.Toggle(false);
-
         DestroyChaimbots();
         DestroyFoods();
+
+        LockedCamera();
+
+        startView.Toggle(true);
+        gameplayView.Toggle(false);
     }
 
     private void ExitGame()
