@@ -10,6 +10,8 @@ public class GameplaySimulationView : MonoBehaviour
     #region EXPOSED_FIELDS
     [Header("General Settings")]
     [SerializeField] private GameObject holder = null;
+    [SerializeField] private GameObject agentHolder = null;
+    [SerializeField] private GameObject gameplayHolder = null;
     [SerializeField] private TMP_Text generationsCountTxt = null;
     [SerializeField] private TMP_Text turnsLeftTxt = null;
     [SerializeField] private TMP_Text bestFitnessTxt = null;
@@ -25,6 +27,14 @@ public class GameplaySimulationView : MonoBehaviour
     [SerializeField] private TMP_Text foodsConsumedTxt = null;
     [SerializeField] private TMP_Text rowTxt = null;
     [SerializeField] private TMP_Text columnTxt = null;
+
+    [Header("Gameplay Info Settings")]
+    [SerializeField] private TMP_Text totalChaimbotsTxt = null;
+    [SerializeField] private TMP_Text totalFoodsTxt = null;
+    [SerializeField] private TMP_Text chaimbotsATxt = null;
+    [SerializeField] private TMP_Text foodsATxt = null;
+    [SerializeField] private TMP_Text chaimbotsBTxt = null;
+    [SerializeField] private TMP_Text foodsBTxt = null;
 
     [Header("Buttons Settings")]
     [SerializeField] private Button pauseBtn = null;
@@ -52,6 +62,13 @@ public class GameplaySimulationView : MonoBehaviour
     private string foodsConsumedText = string.Empty;
     private string rowText = string.Empty;
     private string columnText = string.Empty;
+
+    private string totalChaimbotsText = string.Empty;
+    private string totalFoodsText = string.Empty;
+    private string chaimbotsAText = string.Empty;
+    private string foodsAText = string.Empty;
+    private string chaimbotsBText = string.Empty;
+    private string foodsBText = string.Empty;
     #endregion
 
     #region UNITY_CALLS
@@ -70,6 +87,13 @@ public class GameplaySimulationView : MonoBehaviour
         foodsConsumedTxt.text = string.Format(foodsConsumedText, PopulationManager.Instance.foodsConsumed);
         rowTxt.text = string.Format(rowText, PopulationManager.Instance.row);
         columnTxt.text = string.Format(columnText, PopulationManager.Instance.column);
+
+        totalChaimbotsTxt.text = string.Format(totalChaimbotsText, PopulationManager.Instance.totalChaimbots);
+        totalFoodsTxt.text = string.Format(totalFoodsText, PopulationManager.Instance.totalFoods);
+        chaimbotsATxt.text = string.Format(chaimbotsAText, PopulationManager.Instance.chaimbotsA);
+        foodsATxt.text = string.Format(foodsAText, PopulationManager.Instance.foodsA);
+        chaimbotsBTxt.text = string.Format(chaimbotsBText, PopulationManager.Instance.chaimbotsB);
+        foodsBTxt.text = string.Format(foodsBText, PopulationManager.Instance.foodsB);
     }
     #endregion
 
@@ -92,6 +116,13 @@ public class GameplaySimulationView : MonoBehaviour
         rowText = rowTxt.text;
         columnText = columnTxt.text;
 
+        totalChaimbotsText = totalChaimbotsTxt.text;
+        totalFoodsText = totalFoodsTxt.text;
+        chaimbotsAText = chaimbotsATxt.text;
+        foodsAText = foodsATxt.text;
+        chaimbotsBText = chaimbotsBTxt.text;
+        foodsBText = foodsBTxt.text;
+
         pauseBtn.onClick.AddListener(() => onPauseGame?.Invoke());
         saveBtn.onClick.AddListener(() => PopulationManager.Instance.SaveData());
         stopBtn.onClick.AddListener(() => onStopSimulation?.Invoke());
@@ -103,9 +134,24 @@ public class GameplaySimulationView : MonoBehaviour
         nextBtn.onClick.AddListener(() => onFollowCamera?.Invoke(true));
     }
 
+    public void ToggleSaveButtonStatus(bool status)
+    {
+        saveBtn.interactable = status;
+    }
+
     public void Toggle(bool status)
     {
         holder.SetActive(status);
+    }
+
+    public void ToggleAgentInfoStatus(bool status)
+    {
+        agentHolder.SetActive(status);
+    }
+
+    public void ToggleGameplayInfoStatus(bool status)
+    {
+        gameplayHolder.SetActive(status);
     }
     #endregion
 

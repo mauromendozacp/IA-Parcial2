@@ -46,14 +46,6 @@ public class Chaimbot : Agent
         SetView(team);
     }
 
-    public void ResetPositions()
-    {
-        moveIndex = index;
-
-        startPosition = transform.position;
-        movePosition = transform.position;
-    }
-
     public void Move(float lerp)
     {
         transform.position = Vector3.Lerp(startPosition, movePosition, lerp);
@@ -75,7 +67,32 @@ public class Chaimbot : Agent
             SetGoodFitness();
 
             foodsConsumed++;
+
+            PopulationManager.Instance.totalFoods++;
+            if (team == TEAM.A)
+            {
+                PopulationManager.Instance.foodsA++;
+            }
+            else
+            {
+                PopulationManager.Instance.foodsB++;
+            }
         }
+    }
+
+    public void StopMovement()
+    {
+        animator.SetFloat(speedKey, 0f);
+    }
+
+    public void ResetData()
+    {
+        moveIndex = index;
+
+        startPosition = transform.position;
+        movePosition = transform.position;
+
+        foodsConsumed = 0;
     }
     #endregion
 

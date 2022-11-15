@@ -3,7 +3,8 @@ using System.Collections.Generic;
 [System.Serializable]
 public class BrainData
 {
-    public List<Genome> genomes = null;
+    public List<Genome> genomes1 = null;
+    public List<Genome> genomes2 = null;
 
     public int GenerationCount = 0;
     public int PopulationCount = 0;

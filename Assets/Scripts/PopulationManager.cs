@@ -39,15 +39,22 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public int foodsConsumed = 0;
     [HideInInspector] public int row = 0;
     [HideInInspector] public int column = 0;
+
+    [HideInInspector] public int totalChaimbots = 0;
+    [HideInInspector] public int totalFoods = 0;
+    [HideInInspector] public int chaimbotsA = 0;
+    [HideInInspector] public int foodsA = 0;
+    [HideInInspector] public int chaimbotsB = 0;
+    [HideInInspector] public int foodsB = 0;
     #endregion
 
     #region PRIVATE_FIELDS
     private GeneticAlgorithm genAlg = null;
 
     private List<Genome> populations = new List<Genome>();
-    private List<NeuralNetwork> brains = new List<NeuralNetwork>();
+    private List<Genome> populationsA = new List<Genome>();
+    private List<Genome> populationsB = new List<Genome>();
 
-    private List<Genome> savePopulations = new List<Genome>();
     private bool dataLoaded = false;
     #endregion
 
@@ -85,11 +92,18 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         foodsConsumed = 0;
         row = 0;
         column = 0;
+
+        totalChaimbots = 0;
+        totalFoods = 0;
+        chaimbotsA = 0;
+        foodsA = 0;
+        chaimbotsB = 0;
+        foodsB = 0;
     }
     #endregion
 
     #region PUBLIC_METHODS
-    public void StartSimulation(List<Agent> agents, bool dataLoaded)
+    public void StartSimulation(List<Chaimbot> chaimbots, bool dataLoaded)
     {
         this.dataLoaded = dataLoaded;
         genAlg = new GeneticAlgorithm(EliteCount, MutationChance, MutationRate);
@@ -97,20 +111,66 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         generation = dataLoaded ? generation : 0;
         turnsLeft = dataLoaded ? 0 : Turns;
 
-        for (int i = 0; i < agents.Count; i++)
+        if (dataLoaded)
         {
-            NeuralNetwork brain = CreateBrain();
-            Genome genome = dataLoaded ? savePopulations[i] : new Genome(brain.GetTotalWeightsCount());
+            List<Chaimbot> chaimbotsA = chaimbots.FindAll(c => c.Team == TEAM.A);
+            List<Chaimbot> chaimbotsB = chaimbots.FindAll(c => c.Team == TEAM.B);
 
-            brain.SetWeights(genome.genome);
-            brains.Add(brain);
-            populations.Add(genome);
+            for (int i = 0; i < chaimbotsA.Count; i++)
+            {
+                NeuralNetwork brain = CreateBrain();
+                Genome genome = populationsA[i];
 
-            agents[i].SetBrain(genome, brain);
+                brain.SetWeights(genome.genome);
+
+                chaimbotsA[i].SetBrain(genome, brain);
+            }
+
+            for (int i = 0; i < chaimbotsB.Count; i++)
+            {
+                NeuralNetwork brain = CreateBrain();
+                Genome genome = populationsB[i];
+
+                brain.SetWeights(genome.genome);
+
+                chaimbotsB[i].SetBrain(genome, brain);
+            }
         }
+        else
+        {
+            for (int i = 0; i < chaimbots.Count; i++)
+            {
+                NeuralNetwork brain = CreateBrain();
+                Genome genome = new Genome(brain.GetTotalWeightsCount());
+
+                brain.SetWeights(genome.genome);
+
+                if (chaimbots[i].Team == TEAM.A)
+                {
+                    populationsA.Add(genome);
+                }
+                else if (chaimbots[i].Team == TEAM.B)
+                {
+                    populationsB.Add(genome);
+                }
+
+                chaimbots[i].SetBrain(genome, brain);
+            }
+
+            populations.AddRange(populationsA);
+            populations.AddRange(populationsB);
+        }
+
+        totalChaimbots = populations.Count;
+        chaimbotsA = populationsA.Count;
+        chaimbotsB = populationsB.Count;
+
+        totalFoods = 0;
+        foodsA = 0;
+        foodsB = 0;
     }
 
-    public void Epoch(List<Agent> agents)
+    public void Epoch(List<Chaimbot> chaimbots, Action<Genome[], NeuralNetwork[], TEAM> onCreateNewChaimbots)
     {
         if (dataLoaded) return;
 
@@ -121,16 +181,24 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         avgFitness = GetAvgFitness();
         worstFitness = GetWorstFitness();
 
-        Genome[] newGenomes = genAlg.Epoch(populations.ToArray());
         populations.Clear();
-        populations.AddRange(newGenomes);
+        populationsA.Clear();
+        populationsB.Clear();
 
-        for (int i = 0; i < PopulationCount; i++)
-        {
-            NeuralNetwork brain = brains[i];
-            brain.SetWeights(newGenomes[i].genome);
-            agents[i].SetBrain(newGenomes[i], brain);
-        }
+        ExtinctChaimbots(chaimbots);
+        SurvivingChaimbots(chaimbots);
+        BreeadingChaimbots(chaimbots, onCreateNewChaimbots);
+        
+        populations.AddRange(populationsA);
+        populations.AddRange(populationsB);
+
+        totalChaimbots = populations.Count;
+        chaimbotsA = populationsA.Count;
+        chaimbotsB = populationsB.Count;
+
+        totalFoods = 0;
+        foodsA = 0;
+        foodsB = 0;
     }
 
     public void UpdateFollowChaimbotData(Chaimbot chaimbot)
@@ -164,7 +232,8 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         if (string.IsNullOrEmpty(path)) return;
 
         BrainData data = new BrainData();
-        data.genomes = populations;
+        data.genomes1 = populationsA;
+        data.genomes2 = populationsB;
 
         data.GenerationCount = generation;
         data.PopulationCount = PopulationCount;
@@ -209,7 +278,8 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         if (data == null) return;
 
-        savePopulations = data.genomes;
+        populationsA = data.genomes1;
+        populationsB = data.genomes2;
 
         generation = data.GenerationCount;
         PopulationCount = data.PopulationCount;
@@ -229,6 +299,15 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         P = data.P;
 
         onStartGame?.Invoke(true);
+    }
+
+    public int GetPopulationACount()
+    {
+        return populationsA.Count;
+    }
+    public int GetPopulationBCount()
+    {
+        return populationsB.Count;
     }
     #endregion
 
@@ -270,13 +349,14 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         {
             fitness += g.fitness;
         }
+        fitness = populations.Count == 0 ? 0f : fitness / populations.Count;
 
-        return fitness / populations.Count;
+        return fitness;
     }
 
     private float GetWorstFitness()
     {
-        float fitness = float.MaxValue;
+        float fitness = populations.Count == 0 ? 0f : float.MaxValue;
         foreach (Genome g in populations)
         {
             if (fitness > g.fitness)
@@ -286,6 +366,81 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         }
 
         return fitness;
+    }
+
+    private void ExtinctChaimbots(List<Chaimbot> chaimbots)
+    {
+        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0);
+
+        for (int i = 0; i < extinctChaimbots.Count; i++)
+        {
+            Destroy(extinctChaimbots[i].gameObject);
+            chaimbots.Remove(extinctChaimbots[i]);
+        }
+    }
+
+    private void SurvivingChaimbots(List<Chaimbot> chaimbots)
+    {
+        List<Chaimbot> survivingChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 1);
+
+        List<Chaimbot> survivingChaimbotsA = survivingChaimbots.FindAll(c => c.Team == TEAM.A);
+        List<Chaimbot> survivingChaimbotsB = survivingChaimbots.FindAll(c => c.Team == TEAM.B);
+
+        List<Genome> survivingGenomesA = new List<Genome>();
+        for (int i = 0; i < survivingChaimbotsA.Count; i++)
+        {
+            survivingGenomesA.Add(survivingChaimbotsA[i].Genome);
+        }
+
+        List<Genome> survivingGenomesB = new List<Genome>();
+        for (int i = 0; i < survivingChaimbotsB.Count; i++)
+        {
+            survivingGenomesB.Add(survivingChaimbotsB[i].Genome);
+        }
+
+        populationsA.AddRange(survivingGenomesA);
+        populationsB.AddRange(survivingGenomesB);
+    }
+
+    private void BreeadingChaimbots(List<Chaimbot> chaimbots, Action<Genome[], NeuralNetwork[], TEAM> onCreateNewChaimbots)
+    {
+        List<Chaimbot> breedingChaimbots = chaimbots.FindAll(c => c.FoodsConsumed >= 2);
+
+        List<Chaimbot> breedingChaimbotsA = breedingChaimbots.FindAll(c => c.Team == TEAM.A);
+        List<Chaimbot> breedingChaimbotsB = breedingChaimbots.FindAll(c => c.Team == TEAM.B);
+
+        List<Genome> breedingGenomesA = new List<Genome>();
+        for (int i = 0; i < breedingChaimbotsA.Count; i++)
+        {
+            breedingGenomesA.Add(breedingChaimbotsA[i].Genome);
+        }
+
+        List<Genome> breedingGenomesB = new List<Genome>();
+        for (int i = 0; i < breedingChaimbotsB.Count; i++)
+        {
+            breedingGenomesB.Add(breedingChaimbotsB[i].Genome);
+        }
+
+        Genome[] newGenomesA = genAlg.Epoch(breedingGenomesA.ToArray());
+        Genome[] newGenomesB = genAlg.Epoch(breedingGenomesB.ToArray());
+
+        NeuralNetwork[] brainsA = new NeuralNetwork[newGenomesA.Length];
+        for (int i = 0; i < brainsA.Length; i++)
+        {
+            brainsA[i] = CreateBrain();
+        }
+
+        NeuralNetwork[] brainsB = new NeuralNetwork[newGenomesB.Length];
+        for (int i = 0; i < brainsB.Length; i++)
+        {
+            brainsB[i] = CreateBrain();
+        }
+
+        onCreateNewChaimbots?.Invoke(newGenomesA, brainsA, TEAM.A);
+        onCreateNewChaimbots?.Invoke(newGenomesB, brainsB, TEAM.B);
+
+        populationsA.AddRange(newGenomesA);
+        populationsB.AddRange(newGenomesB);
     }
     #endregion
 }

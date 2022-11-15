@@ -19,6 +19,8 @@ public abstract class Agent : MonoBehaviour
     #endregion
 
     #region PROPERTIES
+    public Genome Genome { get => genome; }
+    public NeuralNetwork Brain { get => brain; }
     public float Fitness { get => fitness; }
     #endregion
 

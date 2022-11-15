@@ -80,18 +80,18 @@ public class GameplayController : MonoBehaviour
     #region PRIVATE_METHODS
     private void StartGame(bool dataLoaded)
     {
+        gameplayView.ToggleSaveButtonStatus(!dataLoaded);
+
         startView.Toggle(false);
         gameplayView.Toggle(true);
 
         size = PopulationManager.Instance.PopulationCount;
         foodSize = size * 2;
 
-        SpawnChaimbots();
+        SpawnChaimbots(dataLoaded);
         SpawnFoods();
 
-        List<Agent> agents = new List<Agent>();
-        agents.AddRange(chaimbots);
-        PopulationManager.Instance.StartSimulation(agents, dataLoaded);
+        PopulationManager.Instance.StartSimulation(chaimbots, dataLoaded);
 
         SetChaimbotsPositions();
         ProcessChaimbots();
@@ -106,9 +106,7 @@ public class GameplayController : MonoBehaviour
         DestroyFoods();
         SpawnFoods();
 
-        List<Agent> agents = new List<Agent>();
-        agents.AddRange(chaimbots);
-        PopulationManager.Instance.Epoch(agents);
+        PopulationManager.Instance.Epoch(chaimbots, SpawnNewChaimbots);
 
         SetChaimbotsPositions();
         ProcessChaimbots();
@@ -183,14 +181,47 @@ public class GameplayController : MonoBehaviour
         }
     }
     
-    private void SpawnChaimbots()
+    private void SpawnChaimbots(bool dataLoaded)
     {
-        int totalChaimbots = size * 2;
-        for (int i = 0; i < totalChaimbots; i++)
+        int totalChaimbotsA = PopulationManager.Instance.PopulationCount;
+        int totalChaimbotsB = PopulationManager.Instance.PopulationCount;
+
+        if (dataLoaded)
+        {
+            totalChaimbotsA = PopulationManager.Instance.GetPopulationACount();
+            totalChaimbotsB = PopulationManager.Instance.GetPopulationBCount();
+        }
+
+        for (int i = 0; i < totalChaimbotsA; i++)
         {
             GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
             Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, i < totalChaimbots / 2 ? TEAM.A : TEAM.B);
+            chaimbot.Init(unit, TEAM.A);
+
+            chaimbots.Add(chaimbot);
+        }
+
+        for (int i = 0; i < totalChaimbotsB; i++)
+        {
+            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
+            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
+            chaimbot.Init(unit, TEAM.B);
+
+            chaimbots.Add(chaimbot);
+        }
+    }
+
+    private void SpawnNewChaimbots(Genome[] newGenomes, NeuralNetwork[] brains, TEAM team)
+    {
+        for (int i = 0; i < newGenomes.Length; i++)
+        {
+            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
+            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
+            chaimbot.Init(unit, team);
+
+            NeuralNetwork brain = brains[i];
+            brain.SetWeights(newGenomes[i].genome);
+            chaimbot.SetBrain(newGenomes[i], brain);
 
             chaimbots.Add(chaimbot);
         }
@@ -241,28 +272,27 @@ public class GameplayController : MonoBehaviour
     private void SetChaimbotsPositions()
     {
         Vector3 startPosition = new Vector3(-size / 2, 0f, -size / 2);
+        int aIndex = 0;
+        int bIndex = 0;
 
         for (int i = 0; i < chaimbots.Count; i++)
         {
             Vector2Int index;
 
-            if (i < chaimbots.Count / 2)
+            if (chaimbots[i].Team == TEAM.A)
             {
-                index = new Vector2Int(i, 0);
-
-                chaimbots[i].transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
-                chaimbots[i].transform.forward = transform.forward;
+                index = new Vector2Int(aIndex, 0);
+                aIndex++;
             }
             else
             {
-                index = new Vector2Int((i - chaimbots.Count / 2), size);
-
-                chaimbots[i].transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
-                chaimbots[i].transform.forward = -transform.forward;
+                index = new Vector2Int(bIndex - chaimbots.Count / 2, size);
+                bIndex++;
             }
 
             chaimbots[i].Index = index;
-            chaimbots[i].ResetPositions();
+            chaimbots[i].transform.position = (startPosition + new Vector3(index.x, 0f, index.y)) * unit;
+            chaimbots[i].ResetData();
         }
     }
 
@@ -316,6 +346,9 @@ public class GameplayController : MonoBehaviour
     private void LockedCamera()
     {
         cameraController.SetMode(CAMERA_MODE.LOCKED);
+
+        gameplayView.ToggleGameplayInfoStatus(true);
+        gameplayView.ToggleAgentInfoStatus(false);
     }
 
     private void FollowCamera(bool increment)
@@ -339,6 +372,9 @@ public class GameplayController : MonoBehaviour
 
             cameraController.SetFollowAgent(followChaimbot);
             cameraController.SetMode(CAMERA_MODE.FOLLOW);
+
+            gameplayView.ToggleGameplayInfoStatus(false);
+            gameplayView.ToggleAgentInfoStatus(true);
         }
         else
         {
@@ -349,6 +385,9 @@ public class GameplayController : MonoBehaviour
     private void FreeCamera()
     {
         cameraController.SetMode(CAMERA_MODE.FREE);
+
+        gameplayView.ToggleGameplayInfoStatus(true);
+        gameplayView.ToggleAgentInfoStatus(false);
     }
     #endregion
 
@@ -356,6 +395,14 @@ public class GameplayController : MonoBehaviour
     private void PauseGame()
     {
         isRunning = !isRunning;
+
+        if (!isRunning)
+        {
+            for (int i = 0; i < chaimbots.Count; i++)
+            {
+                chaimbots[i].StopMovement();
+            }
+        }
     }
 
     private void StopSimulation()
@@ -374,5 +421,6 @@ public class GameplayController : MonoBehaviour
         Application.Quit();
     }
     #endregion
+
     #endregion
 }
