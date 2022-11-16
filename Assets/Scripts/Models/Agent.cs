@@ -43,10 +43,16 @@ public abstract class Agent : MonoBehaviour
         ProcessOutputs(outputs);
     }
 
-    public void SetGoodFitness()
+    public void UpdateFitness(float fitness)
     {
-        fitness *= 2f;
-        genome.fitness = fitness;
+        this.fitness *= fitness;
+
+        if (this.fitness < 1f)
+        {
+            this.fitness = 1f;
+        }
+
+        genome.fitness = this.fitness;
     }
     #endregion
 

@@ -139,6 +139,9 @@ MonoBehaviour:
   - {fileID: 2827060952227513461}
   - {fileID: 3740386364566922153}
   - {fileID: 8612345549116689495}
+  consumeNearFoodFitness: 5
+  consumeFoodFitness: 2.5
+  outLimitYFitness: 1
 --- !u!95 &913360146667804735
 Animator:
   serializedVersion: 4

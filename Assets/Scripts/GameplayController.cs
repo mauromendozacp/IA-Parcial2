@@ -28,6 +28,7 @@ public class GameplayController : MonoBehaviour
 
     #region PRIVATE_FIELDS
     private List<Chaimbot> chaimbots = new List<Chaimbot>();
+    private List<Chaimbot> eatingChaimbots = new List<Chaimbot>();
     private List<Food> foods = new List<Food>();
 
     private int size = 0;
@@ -99,6 +100,8 @@ public class GameplayController : MonoBehaviour
         isRunning = true;
         isLoop = dataLoaded;
         currentFollowAgent = -1;
+
+        PopulationManager.Instance.totalFoods = foodSize;
     }
 
     private void ResetSimulation()
@@ -110,6 +113,8 @@ public class GameplayController : MonoBehaviour
 
         SetChaimbotsPositions();
         ProcessChaimbots();
+
+        PopulationManager.Instance.totalFoods = foodSize;
     }
 
     private void UpdateMoveChaimbots(float lerp)
@@ -126,33 +131,10 @@ public class GameplayController : MonoBehaviour
     {
         foreach (Chaimbot chaimbot in chaimbots)
         {
-            if (!CheckLimitY(chaimbot.Index.y)) continue;
+            if (!CheckLimitY(chaimbot.Index.y) || chaimbot.Dead) continue;
 
             chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
             chaimbot.Think();
-
-            float limitX = size / 2f * unit;
-            Vector3 pos = chaimbot.MovePosition;
-            if (pos.x > limitX)
-            {
-                pos.x -= limitX * 2;
-            }
-            else if (pos.x < -limitX)
-            {
-                pos.x += limitX * 2;
-            }
-            chaimbot.MovePosition = pos;
-
-            Vector2Int index = chaimbot.MoveIndex;
-            if (index.x > size)
-            {
-                index.x = 0;
-            }
-            else if (index.x < 0)
-            {
-                index.x = size;
-            }
-            chaimbot.MoveIndex = index;
         }
     }
 
@@ -161,14 +143,40 @@ public class GameplayController : MonoBehaviour
         for (int i = 0; i < foods.Count; i++)
         {
             bool foodConsumed = false;
+            eatingChaimbots.Clear();
 
             for (int j = 0; j < chaimbots.Count; j++)
             {
                 if (foods[i].Index == chaimbots[j].Index)
                 {
-                    foodConsumed = true;
-                    break;
+                    eatingChaimbots.Add(chaimbots[j]);
                 }
+            }
+
+            if (eatingChaimbots.Count > 1)
+            {
+                eatingChaimbots.RemoveAll(c => !c.ToStay);
+            }
+
+            if (eatingChaimbots.Count > 0)
+            {
+                int chaimbotEatingIndex = 0;
+
+                if (eatingChaimbots.Count >= 2)
+                {
+                    chaimbotEatingIndex = Random.Range(0, eatingChaimbots.Count);
+
+                    for (int j = 0; j < eatingChaimbots.Count; j++)
+                    {
+                        if (j != chaimbotEatingIndex)
+                        {
+                            eatingChaimbots[j].Death();
+                        }
+                    }
+                }
+
+                eatingChaimbots[chaimbotEatingIndex].ConsumeFood();
+                foodConsumed = true;
             }
 
             if (foodConsumed)
@@ -176,6 +184,8 @@ public class GameplayController : MonoBehaviour
                 Destroy(foods[i].gameObject);
                 foods.RemoveAt(i);
                 i--;
+
+                PopulationManager.Instance.totalFoods--;
             }
         }
     }
@@ -195,7 +205,7 @@ public class GameplayController : MonoBehaviour
         {
             GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
             Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, TEAM.A);
+            chaimbot.Init(unit, size, TEAM.A);
 
             chaimbots.Add(chaimbot);
         }
@@ -204,7 +214,7 @@ public class GameplayController : MonoBehaviour
         {
             GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
             Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, TEAM.B);
+            chaimbot.Init(unit, size, TEAM.B);
 
             chaimbots.Add(chaimbot);
         }
@@ -216,7 +226,7 @@ public class GameplayController : MonoBehaviour
         {
             GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
             Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, team);
+            chaimbot.Init(unit, size, team);
 
             NeuralNetwork brain = brains[i];
             brain.SetWeights(newGenomes[i].genome);
@@ -304,7 +314,7 @@ public class GameplayController : MonoBehaviour
         {
             repeat = false;
 
-            int x = Random.Range(1, size - 1);
+            int x = Random.Range(0, size);
             int y = Random.Range(1, size - 1);
             index = new Vector2Int(x, y);
 

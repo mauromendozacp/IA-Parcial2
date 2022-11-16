@@ -65,7 +65,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         PopulationCount = 100;
 
-        Turns = 50;
+        Turns = 100;
         IterationCount = 1;
 
         EliteCount = 4;
@@ -74,7 +74,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         InputsCount = 6;
         HiddenLayers = 1;
-        OutputsCount = 2;
+        OutputsCount = 3;
         NeuronsCountPerHL = 7;
         Bias = 1f;
         P = 0.5f;

@@ -9,45 +9,59 @@ public class Chaimbot : Agent
     [Header("View Settings")]
     [SerializeField] private GameObject[] maleViews = null;
     [SerializeField] private GameObject[] femaleViews = null;
+
+    [Header("Fitness Settings")]
+    [SerializeField] private float consumeNearFoodFitness = 0f;
+    [SerializeField] private float consumeFoodFitness = 0f;
+    [SerializeField] private float outLimitYFitness = 0f;
     #endregion
 
     #region PRIVATE_FIELDS
     private float unit = 0f;
     private Vector2Int index = Vector2Int.zero;
-
-    private BehaviourTree behaviourTree = null;
+    private bool dead = false;
 
     private Food nearFood = null;
     private int foodsConsumed = 0;
+    private bool toStay = false;
 
     private Vector2Int moveIndex = Vector2Int.zero;
     private Vector3 startPosition = Vector3.zero;
     private Vector3 movePosition = Vector3.zero;
+
+    private float limitX = 0f;
+    private int maxIndex = 0;
     #endregion
 
     #region CONSTANTS_FIELDS
     private const string speedKey = "speed";
+    private const string deadKey = "dead";
     #endregion
 
     #region PROPERTIES
     public Vector2Int Index { get => index; set => index = value; }
-    public Vector2Int MoveIndex { get => moveIndex; set => moveIndex = value; }
-    public Vector3 MovePosition { get => movePosition; set => movePosition = value; }
     public int FoodsConsumed { get => foodsConsumed; }
     public TEAM Team { get => team; }
+    public bool ToStay { get => toStay; }
+    public bool Dead { get => dead; }
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(float unit, TEAM team)
+    public void Init(float unit, int size, TEAM team)
     {
         this.unit = unit;
         this.team = team;
+
+        limitX = size / 2f * unit;
+        maxIndex = size;
 
         SetView(team);
     }
 
     public void Move(float lerp)
     {
+        if (dead) return;
+
         transform.position = Vector3.Lerp(startPosition, movePosition, lerp);
 
         animator.SetFloat(speedKey, curve.Evaluate(lerp));
@@ -61,23 +75,6 @@ public class Chaimbot : Agent
     public void Think()
     {
         OnThink();
-
-        if (index == nearFood.Index)
-        {
-            SetGoodFitness();
-
-            foodsConsumed++;
-
-            PopulationManager.Instance.totalFoods++;
-            if (team == TEAM.A)
-            {
-                PopulationManager.Instance.foodsA++;
-            }
-            else
-            {
-                PopulationManager.Instance.foodsB++;
-            }
-        }
     }
 
     public void StopMovement()
@@ -93,6 +90,29 @@ public class Chaimbot : Agent
         movePosition = transform.position;
 
         foodsConsumed = 0;
+    }
+
+    public void ConsumeFood()
+    {
+        UpdateFitness(index == nearFood.Index ? consumeNearFoodFitness : consumeFoodFitness);
+
+        foodsConsumed++;
+
+        if (team == TEAM.A)
+        {
+            PopulationManager.Instance.foodsA++;
+        }
+        else
+        {
+            PopulationManager.Instance.foodsB++;
+        }
+    }
+
+    public void Death()
+    {
+        dead = true;
+
+        animator.SetTrigger(deadKey);
     }
     #endregion
 
@@ -117,7 +137,7 @@ public class Chaimbot : Agent
         startPosition = transform.position;
         index = moveIndex;
 
-        if (outputs != null && outputs.Length >= 2)
+        if (outputs != null && outputs.Length >= 3)
         {
             bool vertical = outputs[0] < 0.5f;
             float positive = outputs[1] < 0.5f ? -1f : 1f;
@@ -127,6 +147,11 @@ public class Chaimbot : Agent
             transform.forward = dir;
 
             moveIndex = index + new Vector2Int((int)dir.x, (int)dir.z);
+
+            toStay = outputs[2] < 0.5f;
+
+            UpdatePositionLimit();
+            UpdateIndexLimit();
         }
     }
 
@@ -154,6 +179,36 @@ public class Chaimbot : Agent
     private Vector3 GetDirToFood(Vector3 foodPosition)
     {
         return (foodPosition - transform.position).normalized;
+    }
+
+    private void UpdatePositionLimit()
+    {
+        Vector3 pos = movePosition;
+        if (pos.x > limitX)
+        {
+            pos.x -= limitX * 2;
+            startPosition = pos - new Vector3(unit, 0f, 0f);
+        }
+        else if (pos.x < -limitX)
+        {
+            pos.x += limitX * 2;
+            startPosition = pos + new Vector3(unit, 0f, 0f);
+        }
+        movePosition = pos;
+    }
+
+    private void UpdateIndexLimit()
+    {
+        Vector2Int auxIndex = moveIndex;
+        if (auxIndex.x > maxIndex)
+        {
+            auxIndex.x = 0;
+        }
+        else if (auxIndex.x < 0)
+        {
+            auxIndex.x = maxIndex;
+        }
+        moveIndex = auxIndex;
     }
     #endregion
 }
