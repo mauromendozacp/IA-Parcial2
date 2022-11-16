@@ -14,6 +14,7 @@ public class GameplayController : MonoBehaviour
     [Header("Chaimbot Settings")]
     [SerializeField] private GameObject chaimbotPrefab = null;
     [SerializeField] private Transform chaimbotHolder = null;
+    [SerializeField] private int agentMaxGeneration = 0;
 
     [Header("Food Settings")]
     [SerializeField] private GameObject foodPrefab = null;
@@ -94,7 +95,7 @@ public class GameplayController : MonoBehaviour
         SpawnChaimbots(dataLoaded);
         SpawnFoods();
 
-        PopulationManager.Instance.StartSimulation(chaimbots, dataLoaded);
+        PopulationManager.Instance.StartSimulation(chaimbots, dataLoaded, agentMaxGeneration);
 
         SetChaimbotsPositions();
         ProcessChaimbots();
@@ -108,11 +109,14 @@ public class GameplayController : MonoBehaviour
     {
         DestroyFoods();
         SpawnFoods();
+        ChaimbotsNextGeneration();
 
         PopulationManager.Instance.Epoch(chaimbots, SpawnNewChaimbots);
 
         SetChaimbotsPositions();
         ProcessChaimbots();
+
+        LockedCamera();
     }
 
     private void UpdateMoveChaimbots(float lerp)
@@ -193,15 +197,23 @@ public class GameplayController : MonoBehaviour
         return nearest;
     }
 
+    private void ChaimbotsNextGeneration()
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].GenerationCount++;
+        }
+    }
+
     #region PROCESS
     private void ProcessChaimbots()
     {
-        foreach (Chaimbot chaimbot in chaimbots)
+        for (int i = 0; i < chaimbots.Count; i++)
         {
-            if (!CheckLimitY(chaimbot.Index.y) || chaimbot.Dead) continue;
+            if (!CheckLimitY(chaimbots[i].Index.y) || chaimbots[i].Dead) continue;
 
-            chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
-            chaimbot.Think();
+            chaimbots[i].SetNearFood(GetNearFood(chaimbots[i].transform.position));
+            chaimbots[i].Think();
         }
     }
 
@@ -387,6 +399,7 @@ public class GameplayController : MonoBehaviour
             Chaimbot followChaimbot = chaimbots[currentFollowAgent];
             PopulationManager.Instance.agentNro = currentFollowAgent;
             PopulationManager.Instance.agentTeam = followChaimbot.Team.ToString();
+            PopulationManager.Instance.agentGeneration = followChaimbot.GenerationCount;
 
             cameraController.SetFollowAgent(followChaimbot);
             cameraController.SetMode(CAMERA_MODE.FOLLOW);

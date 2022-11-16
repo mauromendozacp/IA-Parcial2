@@ -37,6 +37,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public string agentTeam = string.Empty;
     [HideInInspector] public float agentFitness = 0f;
     [HideInInspector] public int agentFoodsConsumed = 0;
+    [HideInInspector] public int agentGeneration = 0;
     [HideInInspector] public int row = 0;
     [HideInInspector] public int column = 0;
 
@@ -59,6 +60,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     private List<Genome> populationsB = new List<Genome>();
 
     private bool dataLoaded = false;
+    private int agentMaxGeneration = 0;
     #endregion
 
     #region UNITY_CALLS
@@ -77,6 +79,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         agentTeam = string.Empty;
         agentFitness = 0f;
         agentFoodsConsumed = 0;
+        agentGeneration = 0;
         row = 0;
         column = 0;
 
@@ -95,9 +98,11 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     #endregion
 
     #region PUBLIC_METHODS
-    public void StartSimulation(List<Chaimbot> chaimbots, bool dataLoaded)
+    public void StartSimulation(List<Chaimbot> chaimbots, bool dataLoaded, int agentMaxGeneration)
     {
         this.dataLoaded = dataLoaded;
+        this.agentMaxGeneration = agentMaxGeneration;
+
         genAlg = new GeneticAlgorithm(EliteCount, MutationChance, MutationRate);
 
         generation = dataLoaded ? generation : 0;
@@ -218,6 +223,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         {
             agentNro = 0;
             agentFoodsConsumed = 0;
+            agentGeneration = 0;
             row = 0;
             column = 0;
             agentTeam = TEAM.NONE.ToString();
@@ -407,7 +413,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     private void ExtinctChaimbots(List<Chaimbot> chaimbots)
     {
-        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0 || c.Dead);
+        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0 || c.Dead || c.GenerationCount > agentMaxGeneration);
 
         for (int i = 0; i < extinctChaimbots.Count; i++)
         {

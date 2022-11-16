@@ -20,6 +20,7 @@ public class Chaimbot : Agent
     private float unit = 0f;
     private bool dead = false;
     private bool toStay = false;
+    private int generationCount = 0;
 
     private Food nearFood = null;
     private int foodsConsumed = 0;
@@ -40,6 +41,8 @@ public class Chaimbot : Agent
 
     #region PROPERTIES
     public Vector2Int Index { get => index; set => index = value; }
+    public int GenerationCount { get => generationCount; set => generationCount = value; }
+
     public int FoodsConsumed { get => foodsConsumed; }
     public TEAM Team { get => team; }
     public bool ToStay { get => toStay; }
@@ -54,6 +57,8 @@ public class Chaimbot : Agent
 
         limitX = size / 2f * unit;
         maxIndex = size;
+
+        generationCount = 0;
 
         SetView(team);
     }
@@ -88,6 +93,8 @@ public class Chaimbot : Agent
 
         startPosition = transform.position;
         movePosition = transform.position;
+
+        generationCount++;
 
         OnReset();
     }

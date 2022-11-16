@@ -24,7 +24,8 @@ public class GameplaySimulationView : MonoBehaviour
     [SerializeField] private TMP_Text agentNroTxt = null;
     [SerializeField] private TMP_Text agentTeamTxt = null;
     [SerializeField] private TMP_Text agentFitnessTxt = null;
-    [SerializeField] private TMP_Text foodsConsumedTxt = null;
+    [SerializeField] private TMP_Text agentFoodsTxt = null;
+    [SerializeField] private TMP_Text agentGenerationTxt = null;
     [SerializeField] private TMP_Text rowTxt = null;
     [SerializeField] private TMP_Text columnTxt = null;
 
@@ -63,7 +64,8 @@ public class GameplaySimulationView : MonoBehaviour
     private string agentNroText = string.Empty;
     private string agentTeamText = string.Empty;
     private string agentFitnessText = string.Empty;
-    private string foodsConsumedText = string.Empty;
+    private string agentFoodsText = string.Empty;
+    private string agentGenerationText = string.Empty;
     private string rowText = string.Empty;
     private string columnText = string.Empty;
 
@@ -91,7 +93,8 @@ public class GameplaySimulationView : MonoBehaviour
         agentNroTxt.text = string.Format(agentNroText, PopulationManager.Instance.agentNro);
         agentTeamTxt.text = string.Format(agentTeamText, PopulationManager.Instance.agentTeam);
         agentFitnessTxt.text = string.Format(agentFitnessText, PopulationManager.Instance.agentFitness);
-        foodsConsumedTxt.text = string.Format(foodsConsumedText, PopulationManager.Instance.agentFoodsConsumed);
+        agentFoodsTxt.text = string.Format(agentFoodsText, PopulationManager.Instance.agentFoodsConsumed);
+        agentGenerationTxt.text = string.Format(agentGenerationText, PopulationManager.Instance.agentGeneration);
         rowTxt.text = string.Format(rowText, PopulationManager.Instance.row);
         columnTxt.text = string.Format(columnText, PopulationManager.Instance.column);
 
@@ -122,7 +125,8 @@ public class GameplaySimulationView : MonoBehaviour
         agentNroText = agentNroTxt.text;
         agentTeamText = agentTeamTxt.text;
         agentFitnessText = agentFitnessTxt.text;
-        foodsConsumedText = foodsConsumedTxt.text;
+        agentFoodsText = agentFoodsTxt.text;
+        agentGenerationText = agentGenerationTxt.text;
         rowText = rowTxt.text;
         columnText = columnTxt.text;
 
