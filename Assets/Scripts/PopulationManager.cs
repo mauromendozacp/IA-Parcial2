@@ -10,21 +10,21 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     #region PUBLIC_FIELDS
     [SerializeField] private TextAsset brainDataJson = null;
 
-    [HideInInspector] public int PopulationCount = 0;
+    [Range(100, 150)] public int PopulationCount = 0;
 
-    [HideInInspector] public int Turns = 0;
-    [HideInInspector] public int IterationCount = 0;
+    [Range(1, 500)] public int Turns = 0;
+    [Range(1, 100)] public int IterationCount = 0;
 
-    [HideInInspector] public int EliteCount = 0;
-    [HideInInspector] public float MutationChance = 0f;
-    [HideInInspector] public float MutationRate = 0f;
+    public int EliteCount = 0;
+    public float MutationChance = 0f;
+    public float MutationRate = 0f;
 
-    [HideInInspector] public int InputsCount = 0;
-    [HideInInspector] public int HiddenLayers = 0;
-    [HideInInspector] public int OutputsCount = 0;
-    [HideInInspector] public int NeuronsCountPerHL = 0;
-    [HideInInspector] public float Bias = 0f;
-    [HideInInspector] public float P = 0f;
+    public int InputsCount = 0;
+    public int HiddenLayers = 0;
+    public int OutputsCount = 0;
+    public int NeuronsCountPerHL = 0;
+    public float Bias = 0f;
+    public float P = 0f;
 
     [HideInInspector] public int generation = 0;
     [HideInInspector] public int turnsLeft = 0;
@@ -36,16 +36,19 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public int agentNro = 0;
     [HideInInspector] public string agentTeam = string.Empty;
     [HideInInspector] public float agentFitness = 0f;
-    [HideInInspector] public int foodsConsumed = 0;
+    [HideInInspector] public int agentFoodsConsumed = 0;
     [HideInInspector] public int row = 0;
     [HideInInspector] public int column = 0;
 
     [HideInInspector] public int totalChaimbots = 0;
-    [HideInInspector] public int totalFoods = 0;
+    [HideInInspector] public int totalFoodsConsumed = 0;
+    [HideInInspector] public int totalDeaths = 0;
     [HideInInspector] public int chaimbotsA = 0;
     [HideInInspector] public int foodsA = 0;
+    [HideInInspector] public int deathsA = 0;
     [HideInInspector] public int chaimbotsB = 0;
     [HideInInspector] public int foodsB = 0;
+    [HideInInspector] public int deathsB = 0;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -63,22 +66,6 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     {
         base.Awake();
 
-        PopulationCount = 100;
-
-        Turns = 100;
-        IterationCount = 1;
-
-        EliteCount = 4;
-        MutationChance = 0.10f;
-        MutationRate = 0.01f;
-
-        InputsCount = 6;
-        HiddenLayers = 1;
-        OutputsCount = 3;
-        NeuronsCountPerHL = 7;
-        Bias = 1f;
-        P = 0.5f;
-
         generation = 0;
         turnsLeft = 0;
 
@@ -89,16 +76,21 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         agentNro = 0;
         agentTeam = string.Empty;
         agentFitness = 0f;
-        foodsConsumed = 0;
+        agentFoodsConsumed = 0;
         row = 0;
         column = 0;
 
         totalChaimbots = 0;
-        totalFoods = 0;
+        totalFoodsConsumed = 0;
+        totalDeaths = 0;
+
         chaimbotsA = 0;
         foodsA = 0;
+        deathsA = 0;
+
         chaimbotsB = 0;
         foodsB = 0;
+        deathsB = 0;
     }
     #endregion
 
@@ -110,6 +102,10 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         generation = dataLoaded ? generation : 0;
         turnsLeft = dataLoaded ? 0 : Turns;
+
+        bestFitness = 0f;
+        avgFitness = 0f;
+        worstFitness = 0f;
 
         if (dataLoaded)
         {
@@ -138,6 +134,9 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         }
         else
         {
+            populationsA.Clear();
+            populationsB.Clear();
+
             for (int i = 0; i < chaimbots.Count; i++)
             {
                 NeuralNetwork brain = CreateBrain();
@@ -156,18 +155,22 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
                 chaimbots[i].SetBrain(genome, brain);
             }
-
-            populations.AddRange(populationsA);
-            populations.AddRange(populationsB);
         }
+
+        populations.AddRange(populationsA);
+        populations.AddRange(populationsB);
 
         totalChaimbots = populations.Count;
         chaimbotsA = populationsA.Count;
         chaimbotsB = populationsB.Count;
 
-        totalFoods = 0;
+        totalFoodsConsumed = 0;
         foodsA = 0;
         foodsB = 0;
+
+        totalDeaths = 0;
+        deathsA = 0;
+        deathsB = 0;
     }
 
     public void Epoch(List<Chaimbot> chaimbots, Action<Genome[], NeuralNetwork[], TEAM> onCreateNewChaimbots)
@@ -196,16 +199,17 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         chaimbotsA = populationsA.Count;
         chaimbotsB = populationsB.Count;
 
-        totalFoods = 0;
         foodsA = 0;
         foodsB = 0;
+        deathsA = 0;
+        deathsB = 0;
     }
 
     public void UpdateFollowChaimbotData(Chaimbot chaimbot)
     {
         if (chaimbot != null)
         {
-            foodsConsumed = chaimbot.FoodsConsumed;
+            agentFoodsConsumed = chaimbot.FoodsConsumed;
             row = chaimbot.Index.x;
             column = chaimbot.Index.y;
             agentFitness = chaimbot.Fitness;
@@ -213,7 +217,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         else
         {
             agentNro = 0;
-            foodsConsumed = 0;
+            agentFoodsConsumed = 0;
             row = 0;
             column = 0;
             agentTeam = TEAM.NONE.ToString();
@@ -221,6 +225,44 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         }
     }
 
+    public void AddFoodsConsumed(TEAM team)
+    {
+        totalFoodsConsumed++;
+
+        if (team == TEAM.A)
+        {
+            foodsA++;
+        }
+        else
+        {
+            foodsB++;
+        }
+    }
+
+    public void AddDeaths(TEAM team)
+    {
+        totalDeaths++;
+
+        if (team == TEAM.A)
+        {
+            deathsA++;
+        }
+        else
+        {
+            deathsB++;
+        }
+    }
+
+    public int GetPopulationACount()
+    {
+        return populationsA.Count;
+    }
+    public int GetPopulationBCount()
+    {
+        return populationsB.Count;
+    }
+
+    #region DATA
     public void SaveData()
     {
         string path = null;
@@ -232,14 +274,13 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         if (string.IsNullOrEmpty(path)) return;
 
         BrainData data = new BrainData();
-        data.genomes1 = populationsA;
-        data.genomes2 = populationsB;
+        data.genomesA = populationsA;
+        data.genomesB = populationsB;
 
         data.GenerationCount = generation;
         data.PopulationCount = PopulationCount;
 
         data.Turns = Turns;
-        data.IterationCount = IterationCount;
 
         data.EliteCount = EliteCount;
         data.MutationChance = MutationChance;
@@ -278,14 +319,17 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         if (data == null) return;
 
-        populationsA = data.genomes1;
-        populationsB = data.genomes2;
+        populations.Clear();
+        populationsA.Clear();
+        populationsB.Clear();
+
+        populationsA = data.genomesA;
+        populationsB = data.genomesB;
 
         generation = data.GenerationCount;
         PopulationCount = data.PopulationCount;
 
         Turns = data.Turns;
-        IterationCount = data.IterationCount;
 
         EliteCount = data.EliteCount;
         MutationChance = data.MutationChance;
@@ -300,15 +344,8 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         onStartGame?.Invoke(true);
     }
+    #endregion
 
-    public int GetPopulationACount()
-    {
-        return populationsA.Count;
-    }
-    public int GetPopulationBCount()
-    {
-        return populationsB.Count;
-    }
     #endregion
 
     #region PRIVATE_METHODS
@@ -370,7 +407,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     private void ExtinctChaimbots(List<Chaimbot> chaimbots)
     {
-        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0);
+        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0 || c.Dead);
 
         for (int i = 0; i < extinctChaimbots.Count; i++)
         {

@@ -54,6 +54,8 @@ public class GameplayController : MonoBehaviour
     {
         if (!isRunning) return;
 
+        if (CheckEndGame()) isRunning = false;
+
         for (int i = 0; i < Mathf.Clamp(PopulationManager.Instance.IterationCount / 100.0f * 50f, 1f, 50f); i++)
         {
             turnsTimer += Time.deltaTime;
@@ -100,8 +102,6 @@ public class GameplayController : MonoBehaviour
         isRunning = true;
         isLoop = dataLoaded;
         currentFollowAgent = -1;
-
-        PopulationManager.Instance.totalFoods = foodSize;
     }
 
     private void ResetSimulation()
@@ -113,8 +113,6 @@ public class GameplayController : MonoBehaviour
 
         SetChaimbotsPositions();
         ProcessChaimbots();
-
-        PopulationManager.Instance.totalFoods = foodSize;
     }
 
     private void UpdateMoveChaimbots(float lerp)
@@ -125,157 +123,6 @@ public class GameplayController : MonoBehaviour
 
             chaimbot.Move(lerp);
         }
-    }
-
-    private void ProcessChaimbots()
-    {
-        foreach (Chaimbot chaimbot in chaimbots)
-        {
-            if (!CheckLimitY(chaimbot.Index.y) || chaimbot.Dead) continue;
-
-            chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
-            chaimbot.Think();
-        }
-    }
-
-    private void ProcessFoods()
-    {
-        for (int i = 0; i < foods.Count; i++)
-        {
-            bool foodConsumed = false;
-            eatingChaimbots.Clear();
-
-            for (int j = 0; j < chaimbots.Count; j++)
-            {
-                if (foods[i].Index == chaimbots[j].Index)
-                {
-                    eatingChaimbots.Add(chaimbots[j]);
-                }
-            }
-
-            if (eatingChaimbots.Count > 1)
-            {
-                eatingChaimbots.RemoveAll(c => !c.ToStay);
-            }
-
-            if (eatingChaimbots.Count > 0)
-            {
-                int chaimbotEatingIndex = 0;
-
-                if (eatingChaimbots.Count >= 2)
-                {
-                    chaimbotEatingIndex = Random.Range(0, eatingChaimbots.Count);
-
-                    for (int j = 0; j < eatingChaimbots.Count; j++)
-                    {
-                        if (j != chaimbotEatingIndex)
-                        {
-                            eatingChaimbots[j].Death();
-                        }
-                    }
-                }
-
-                eatingChaimbots[chaimbotEatingIndex].ConsumeFood();
-                foodConsumed = true;
-            }
-
-            if (foodConsumed)
-            {
-                Destroy(foods[i].gameObject);
-                foods.RemoveAt(i);
-                i--;
-
-                PopulationManager.Instance.totalFoods--;
-            }
-        }
-    }
-    
-    private void SpawnChaimbots(bool dataLoaded)
-    {
-        int totalChaimbotsA = PopulationManager.Instance.PopulationCount;
-        int totalChaimbotsB = PopulationManager.Instance.PopulationCount;
-
-        if (dataLoaded)
-        {
-            totalChaimbotsA = PopulationManager.Instance.GetPopulationACount();
-            totalChaimbotsB = PopulationManager.Instance.GetPopulationBCount();
-        }
-
-        for (int i = 0; i < totalChaimbotsA; i++)
-        {
-            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
-            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, size, TEAM.A);
-
-            chaimbots.Add(chaimbot);
-        }
-
-        for (int i = 0; i < totalChaimbotsB; i++)
-        {
-            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
-            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, size, TEAM.B);
-
-            chaimbots.Add(chaimbot);
-        }
-    }
-
-    private void SpawnNewChaimbots(Genome[] newGenomes, NeuralNetwork[] brains, TEAM team)
-    {
-        for (int i = 0; i < newGenomes.Length; i++)
-        {
-            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
-            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
-            chaimbot.Init(unit, size, team);
-
-            NeuralNetwork brain = brains[i];
-            brain.SetWeights(newGenomes[i].genome);
-            chaimbot.SetBrain(newGenomes[i], brain);
-
-            chaimbots.Add(chaimbot);
-        }
-    }
-
-    private void SpawnFoods()
-    {
-        List<Vector2Int> foodUsedIndexs = new List<Vector2Int>();
-
-        for (int i = 0; i < foodSize; i++)
-        {
-            GameObject foodGO = Instantiate(foodPrefab, foodHolder);
-            Food food = foodGO.GetComponent<Food>();
-
-            int modelIndex = Random.Range(0, foodModels.Length);
-
-            Vector2Int foodIndex = GetRandomIndex(foodUsedIndexs.ToArray());
-
-            Vector3 startPosition = new Vector3(-size / 2f, startPosY, -size / 2f);
-            food.transform.position = (startPosition + new Vector3(foodIndex.x, 0f, foodIndex.y)) * unit;
-            food.Init(foodModels[modelIndex], foodIndex);
-
-            foods.Add(food);
-            foodUsedIndexs.Add(foodIndex);
-        }
-    }
-
-    private void DestroyChaimbots()
-    {
-        for (int i = 0; i < chaimbots.Count; i++)
-        {
-            Destroy(chaimbots[i].gameObject);
-        }
-
-        chaimbots.Clear();
-    }
-
-    private void DestroyFoods()
-    {
-        for (int i = 0; i < foods.Count; i++)
-        {
-            Destroy(foods[i].gameObject);
-        }
-
-        foods.Clear();
     }
 
     private void SetChaimbotsPositions()
@@ -346,10 +193,172 @@ public class GameplayController : MonoBehaviour
         return nearest;
     }
 
+    #region PROCESS
+    private void ProcessChaimbots()
+    {
+        foreach (Chaimbot chaimbot in chaimbots)
+        {
+            if (!CheckLimitY(chaimbot.Index.y) || chaimbot.Dead) continue;
+
+            chaimbot.SetNearFood(GetNearFood(chaimbot.transform.position));
+            chaimbot.Think();
+        }
+    }
+
+    private void ProcessFoods()
+    {
+        for (int i = 0; i < foods.Count; i++)
+        {
+            bool foodConsumed = false;
+            eatingChaimbots.Clear();
+
+            for (int j = 0; j < chaimbots.Count; j++)
+            {
+                if (foods[i].Index == chaimbots[j].Index)
+                {
+                    eatingChaimbots.Add(chaimbots[j]);
+                }
+            }
+
+            if (eatingChaimbots.Count > 1)
+            {
+                eatingChaimbots.RemoveAll(c => !c.ToStay);
+            }
+
+            if (eatingChaimbots.Count > 0)
+            {
+                int chaimbotEatingIndex = 0;
+
+                if (eatingChaimbots.Count >= 2)
+                {
+                    chaimbotEatingIndex = Random.Range(0, eatingChaimbots.Count);
+
+                    for (int j = 0; j < eatingChaimbots.Count; j++)
+                    {
+                        if (j != chaimbotEatingIndex)
+                        {
+                            eatingChaimbots[j].Death();
+                        }
+                    }
+                }
+
+                eatingChaimbots[chaimbotEatingIndex].ConsumeFood();
+                foodConsumed = true;
+            }
+
+            if (foodConsumed)
+            {
+                Destroy(foods[i].gameObject);
+                foods.RemoveAt(i);
+                i--;
+            }
+        }
+    }
+    #endregion
+
+    #region SPAWN
+    private void SpawnChaimbots(bool dataLoaded)
+    {
+        int totalChaimbotsA = PopulationManager.Instance.PopulationCount;
+        int totalChaimbotsB = PopulationManager.Instance.PopulationCount;
+
+        if (dataLoaded)
+        {
+            totalChaimbotsA = PopulationManager.Instance.GetPopulationACount();
+            totalChaimbotsB = PopulationManager.Instance.GetPopulationBCount();
+        }
+
+        for (int i = 0; i < totalChaimbotsA; i++)
+        {
+            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
+            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
+            chaimbot.Init(unit, size, TEAM.A);
+
+            chaimbots.Add(chaimbot);
+        }
+
+        for (int i = 0; i < totalChaimbotsB; i++)
+        {
+            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
+            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
+            chaimbot.Init(unit, size, TEAM.B);
+
+            chaimbots.Add(chaimbot);
+        }
+    }
+
+    private void SpawnNewChaimbots(Genome[] newGenomes, NeuralNetwork[] brains, TEAM team)
+    {
+        for (int i = 0; i < newGenomes.Length; i++)
+        {
+            GameObject chaimbotGO = Instantiate(chaimbotPrefab, chaimbotHolder);
+            Chaimbot chaimbot = chaimbotGO.GetComponent<Chaimbot>();
+            chaimbot.Init(unit, size, team);
+
+            NeuralNetwork brain = brains[i];
+            brain.SetWeights(newGenomes[i].genome);
+            chaimbot.SetBrain(newGenomes[i], brain);
+
+            chaimbots.Add(chaimbot);
+        }
+    }
+
+    private void SpawnFoods()
+    {
+        List<Vector2Int> foodUsedIndexs = new List<Vector2Int>();
+
+        for (int i = 0; i < foodSize; i++)
+        {
+            GameObject foodGO = Instantiate(foodPrefab, foodHolder);
+            Food food = foodGO.GetComponent<Food>();
+
+            int modelIndex = Random.Range(0, foodModels.Length);
+
+            Vector2Int foodIndex = GetRandomIndex(foodUsedIndexs.ToArray());
+
+            Vector3 startPosition = new Vector3(-size / 2f, startPosY, -size / 2f);
+            food.transform.position = (startPosition + new Vector3(foodIndex.x, 0f, foodIndex.y)) * unit;
+            food.Init(foodModels[modelIndex], foodIndex);
+
+            foods.Add(food);
+            foodUsedIndexs.Add(foodIndex);
+        }
+    }
+    #endregion
+
+    #region DESPAWN
+    private void DestroyChaimbots()
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            Destroy(chaimbots[i].gameObject);
+        }
+
+        chaimbots.Clear();
+    }
+
+    private void DestroyFoods()
+    {
+        for (int i = 0; i < foods.Count; i++)
+        {
+            Destroy(foods[i].gameObject);
+        }
+
+        foods.Clear();
+    }
+    #endregion
+
+    #region CHECKS
     private bool CheckLimitY(int posY)
     {
         return posY >= 0 && posY <= size;
     }
+
+    private bool CheckEndGame()
+    {
+        return chaimbots.Count == 0 || foods.Count == 0;
+    }
+    #endregion
 
     #region CAMERA
     private void LockedCamera()

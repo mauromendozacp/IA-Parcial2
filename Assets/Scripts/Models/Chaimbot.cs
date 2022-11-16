@@ -18,13 +18,13 @@ public class Chaimbot : Agent
 
     #region PRIVATE_FIELDS
     private float unit = 0f;
-    private Vector2Int index = Vector2Int.zero;
     private bool dead = false;
+    private bool toStay = false;
 
     private Food nearFood = null;
     private int foodsConsumed = 0;
-    private bool toStay = false;
 
+    private Vector2Int index = Vector2Int.zero;
     private Vector2Int moveIndex = Vector2Int.zero;
     private Vector3 startPosition = Vector3.zero;
     private Vector3 movePosition = Vector3.zero;
@@ -89,7 +89,7 @@ public class Chaimbot : Agent
         startPosition = transform.position;
         movePosition = transform.position;
 
-        foodsConsumed = 0;
+        OnReset();
     }
 
     public void ConsumeFood()
@@ -98,14 +98,7 @@ public class Chaimbot : Agent
 
         foodsConsumed++;
 
-        if (team == TEAM.A)
-        {
-            PopulationManager.Instance.foodsA++;
-        }
-        else
-        {
-            PopulationManager.Instance.foodsB++;
-        }
+        PopulationManager.Instance.AddFoodsConsumed(team);
     }
 
     public void Death()
@@ -113,6 +106,8 @@ public class Chaimbot : Agent
         dead = true;
 
         animator.SetTrigger(deadKey);
+
+        PopulationManager.Instance.AddDeaths(team);
     }
     #endregion
 
@@ -152,6 +147,11 @@ public class Chaimbot : Agent
 
             UpdatePositionLimit();
             UpdateIndexLimit();
+
+            if (CheckOutLimitY())
+            {
+                UpdateFitness(outLimitYFitness);
+            }
         }
     }
 
@@ -209,6 +209,11 @@ public class Chaimbot : Agent
             auxIndex.x = maxIndex;
         }
         moveIndex = auxIndex;
+    }
+
+    private bool CheckOutLimitY()
+    {
+        return moveIndex.y < 0 || moveIndex.y > maxIndex;
     }
     #endregion
 }
