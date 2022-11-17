@@ -14,6 +14,8 @@ public class StartSimulationView : MonoBehaviour
     [SerializeField] private Slider populationCountSlider = null;
     [SerializeField] private TMP_Text turnsTxt = null;
     [SerializeField] private Slider turnsSlider = null;
+    [SerializeField] private TMP_Text agentMaxGenerationTxt = null;
+    [SerializeField] private Slider agentMaxGenerationSlider = null;
 
     [Header("Team A Settings")]
     [SerializeField] private TMP_Text eliteCountATxt = null;
@@ -55,6 +57,7 @@ public class StartSimulationView : MonoBehaviour
     #region PRIVATE_FIELDS
     private string populationText = string.Empty;
     private string turnsText = string.Empty;
+    private string agentMaxGenerationText = string.Empty;
 
     private string elitesAText = string.Empty;
     private string mutationChanceAText = string.Empty;
@@ -78,6 +81,7 @@ public class StartSimulationView : MonoBehaviour
     {
         populationCountSlider.onValueChanged.AddListener(OnPopulationCountChange);
         turnsSlider.onValueChanged.AddListener(OnTurnsChange);
+        agentMaxGenerationSlider.onValueChanged.AddListener(OnAgentMaxGenerationChange);
 
         eliteCountASlider.onValueChanged.AddListener(OnEliteCountAChange);
         mutationChanceASlider.onValueChanged.AddListener(OnMutationChanceAChange);
@@ -97,6 +101,7 @@ public class StartSimulationView : MonoBehaviour
 
         populationText = populationCountTxt.text;
         turnsText = turnsTxt.text;
+        agentMaxGenerationText = agentMaxGenerationTxt.text;
 
         elitesAText = eliteCountATxt.text;
         mutationChanceAText = mutationChanceATxt.text;
@@ -116,6 +121,7 @@ public class StartSimulationView : MonoBehaviour
 
         populationCountSlider.value = PopulationManager.Instance.PopulationCount;
         turnsSlider.value = PopulationManager.Instance.Turns;
+        agentMaxGenerationSlider.value = PopulationManager.Instance.AgentMaxGeneration;
 
         eliteCountASlider.value = PopulationManager.Instance.A_EliteCount;
         mutationChanceASlider.value = PopulationManager.Instance.A_MutationChance * 100.0f;
@@ -135,6 +141,7 @@ public class StartSimulationView : MonoBehaviour
 
         OnPopulationCountChange(populationCountSlider.value);
         OnTurnsChange(turnsSlider.value);
+        OnAgentMaxGenerationChange(agentMaxGenerationSlider.value);
 
         OnEliteCountAChange(eliteCountASlider.value);
         OnMutationChanceAChange(mutationChanceASlider.value);
@@ -175,6 +182,13 @@ public class StartSimulationView : MonoBehaviour
         PopulationManager.Instance.Turns = (int)value;
 
         turnsTxt.text = string.Format(turnsText, PopulationManager.Instance.Turns);
+    }
+
+    private void OnAgentMaxGenerationChange(float value)
+    {
+        PopulationManager.Instance.AgentMaxGeneration = (int)value;
+
+        agentMaxGenerationTxt.text = string.Format(agentMaxGenerationText, PopulationManager.Instance.AgentMaxGeneration);
     }
 
     private void OnEliteCountAChange(float value)

@@ -14,7 +14,6 @@ public class GameplayController : MonoBehaviour
     [Header("Chaimbot Settings")]
     [SerializeField] private GameObject chaimbotPrefab = null;
     [SerializeField] private Transform chaimbotHolder = null;
-    [SerializeField] private int agentMaxGeneration = 0;
 
     [Header("Food Settings")]
     [SerializeField] private GameObject foodPrefab = null;
@@ -84,8 +83,6 @@ public class GameplayController : MonoBehaviour
     #region PRIVATE_METHODS
     private void StartGame(bool dataLoaded)
     {
-        gameplayView.ToggleSaveButtonStatus(!dataLoaded);
-
         startView.Toggle(false);
         gameplayView.Toggle(true);
 
@@ -95,7 +92,7 @@ public class GameplayController : MonoBehaviour
         SpawnChaimbots(dataLoaded);
         SpawnFoods();
 
-        PopulationManager.Instance.StartSimulation(chaimbots, dataLoaded, agentMaxGeneration);
+        PopulationManager.Instance.StartSimulation(chaimbots, dataLoaded);
 
         SetChaimbotsPositions();
         ProcessChaimbots();

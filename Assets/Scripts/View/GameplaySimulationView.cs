@@ -151,11 +151,6 @@ public class GameplaySimulationView : MonoBehaviour
         nextBtn.onClick.AddListener(() => onFollowCamera?.Invoke(true));
     }
 
-    public void ToggleSaveButtonStatus(bool status)
-    {
-        saveBtn.interactable = status;
-    }
-
     public void Toggle(bool status)
     {
         holder.SetActive(status);

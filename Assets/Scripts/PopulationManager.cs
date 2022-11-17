@@ -14,6 +14,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     [Range(1, 500)] public int Turns = 0;
     [Range(1, 100)] public int IterationCount = 0;
+    [Range(1, 100)] public int AgentMaxGeneration = 0;
 
     [Header("Team A Settings")]
     public int A_EliteCount = 0;
@@ -76,7 +77,8 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     private List<Genome> populationsB = new List<Genome>();
 
     private bool dataLoaded = false;
-    private int agentMaxGeneration = 0;
+    private string dataPath = string.Empty;
+    private string fileName = "/Data/brain_data.json";
     #endregion
 
     #region UNITY_CALLS
@@ -110,14 +112,15 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         chaimbotsB = 0;
         foodsB = 0;
         deathsB = 0;
+
+        dataPath = Application.dataPath;
     }
     #endregion
 
     #region PUBLIC_METHODS
-    public void StartSimulation(List<Chaimbot> chaimbots, bool dataLoaded, int agentMaxGeneration)
+    public void StartSimulation(List<Chaimbot> chaimbots, bool dataLoaded)
     {
         this.dataLoaded = dataLoaded;
-        this.agentMaxGeneration = agentMaxGeneration;
 
         genAlgA = new GeneticAlgorithm(A_EliteCount, A_MutationChance, A_MutationRate);
         genAlgB = new GeneticAlgorithm(B_EliteCount, B_MutationChance, B_MutationRate);
@@ -298,9 +301,13 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
 #if UNITY_EDITOR
         path = EditorUtility.SaveFilePanel("Save Brain Data", "", "brain_data.json", "json");
-#endif
-
         if (string.IsNullOrEmpty(path)) return;
+#endif  
+
+        if (string.IsNullOrEmpty(path))
+        {
+            path = dataPath + fileName;
+        }
 
         BrainData data = new BrainData();
         data.genomesA = populationsA;
@@ -474,7 +481,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     private void ExtinctChaimbots(List<Chaimbot> chaimbots)
     {
-        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0 || c.Dead || c.GenerationCount > agentMaxGeneration);
+        List<Chaimbot> extinctChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 0 || c.Dead || c.GenerationCount > AgentMaxGeneration);
 
         for (int i = 0; i < extinctChaimbots.Count; i++)
         {
