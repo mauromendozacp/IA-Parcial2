@@ -129,8 +129,10 @@ public class GameplayController : MonoBehaviour
     private void SetChaimbotsPositions()
     {
         Vector3 startPosition = new Vector3(-size / 2, 0f, -size / 2);
-        int aIndex = 0;
-        int bIndex = size;
+        int aIndexX = 0;
+        int aIndexY = 0;
+        int bIndexX = size;
+        int bIndexY = size;
 
         for (int i = 0; i < chaimbots.Count; i++)
         {
@@ -138,22 +140,24 @@ public class GameplayController : MonoBehaviour
 
             if (chaimbots[i].Team == TEAM.A)
             {
-                index = new Vector2Int(aIndex, 0);
-                aIndex++;
+                index = new Vector2Int(aIndexX, aIndexY);
+                aIndexX++;
 
-                if (aIndex > size)
+                if (aIndexX > size)
                 {
-                    aIndex = 0;
+                    aIndexX = 0;
+                    aIndexY++;
                 }
             }
             else
             {
-                index = new Vector2Int(bIndex, size);
-                bIndex--;
+                index = new Vector2Int(bIndexX, bIndexY);
+                bIndexX--;
 
-                if (bIndex < 0)
+                if (bIndexX < 0)
                 {
-                    bIndex = size;
+                    bIndexX = size;
+                    bIndexY--;
                 }
             }
 
@@ -188,16 +192,21 @@ public class GameplayController : MonoBehaviour
 
     private Food GetNearFood(Vector3 position)
     {
-        Food nearest = foods[0];
-        float distance = (position - nearest.transform.position).sqrMagnitude;
+        Food nearest = null;
 
-        foreach (Food food in foods)
+        if (foods.Count > 0)
         {
-            float newDist = (food.transform.position - position).sqrMagnitude;
-            if (newDist < distance)
+            nearest = foods[0];
+            float distance = (position - nearest.transform.position).sqrMagnitude;
+
+            foreach (Food food in foods)
             {
-                nearest = food;
-                distance = newDist;
+                float newDist = (food.transform.position - position).sqrMagnitude;
+                if (newDist < distance)
+                {
+                    nearest = food;
+                    distance = newDist;
+                }
             }
         }
 

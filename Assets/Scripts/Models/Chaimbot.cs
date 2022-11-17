@@ -101,7 +101,7 @@ public class Chaimbot : Agent
 
     public void ConsumeFood()
     {
-        UpdateFitness(index == nearFood.Index ? consumeNearFoodFitness : consumeFoodFitness);
+        UpdateFitness(nearFood != null && index == nearFood.Index ? consumeNearFoodFitness : consumeFoodFitness);
 
         foodsConsumed++;
 
