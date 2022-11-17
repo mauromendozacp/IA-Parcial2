@@ -7,24 +7,37 @@ using UnityEngine;
 
 public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 {
-    #region PUBLIC_FIELDS
+    #region PUBLIC_FIELDS    
+    [Header("General Settings")]
     [SerializeField] private TextAsset brainDataJson = null;
-
     [Range(100, 150)] public int PopulationCount = 0;
 
     [Range(1, 500)] public int Turns = 0;
     [Range(1, 100)] public int IterationCount = 0;
 
-    public int EliteCount = 0;
-    public float MutationChance = 0f;
-    public float MutationRate = 0f;
+    [Header("Team A Settings")]
+    public int A_EliteCount = 0;
+    public float A_MutationChance = 0f;
+    public float A_MutationRate = 0f;
 
-    public int InputsCount = 0;
-    public int HiddenLayers = 0;
-    public int OutputsCount = 0;
-    public int NeuronsCountPerHL = 0;
-    public float Bias = 0f;
-    public float P = 0f;
+    public int A_InputsCount = 0;
+    public int A_HiddenLayers = 0;
+    public int A_OutputsCount = 0;
+    public int A_NeuronsCountPerHL = 0;
+    public float A_Bias = 0f;
+    public float A_P = 0f;
+
+    [Header("Team B Settings")]
+    public int B_EliteCount = 0;
+    public float B_MutationChance = 0f;
+    public float B_MutationRate = 0f;
+
+    public int B_InputsCount = 0;
+    public int B_HiddenLayers = 0;
+    public int B_OutputsCount = 0;
+    public int B_NeuronsCountPerHL = 0;
+    public float B_Bias = 0f;
+    public float B_P = 0f;
 
     [HideInInspector] public int generation = 0;
     [HideInInspector] public int turnsLeft = 0;
@@ -44,16 +57,19 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public int totalChaimbots = 0;
     [HideInInspector] public int totalFoodsConsumed = 0;
     [HideInInspector] public int totalDeaths = 0;
+
     [HideInInspector] public int chaimbotsA = 0;
     [HideInInspector] public int foodsA = 0;
     [HideInInspector] public int deathsA = 0;
+
     [HideInInspector] public int chaimbotsB = 0;
     [HideInInspector] public int foodsB = 0;
     [HideInInspector] public int deathsB = 0;
     #endregion
 
     #region PRIVATE_FIELDS
-    private GeneticAlgorithm genAlg = null;
+    private GeneticAlgorithm genAlgA = null;
+    private GeneticAlgorithm genAlgB = null;
 
     private List<Genome> populations = new List<Genome>();
     private List<Genome> populationsA = new List<Genome>();
@@ -103,7 +119,8 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         this.dataLoaded = dataLoaded;
         this.agentMaxGeneration = agentMaxGeneration;
 
-        genAlg = new GeneticAlgorithm(EliteCount, MutationChance, MutationRate);
+        genAlgA = new GeneticAlgorithm(A_EliteCount, A_MutationChance, A_MutationRate);
+        genAlgB = new GeneticAlgorithm(B_EliteCount, B_MutationChance, B_MutationRate);
 
         generation = dataLoaded ? generation : 0;
         turnsLeft = dataLoaded ? 0 : Turns;
@@ -119,7 +136,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
             for (int i = 0; i < chaimbotsA.Count; i++)
             {
-                NeuralNetwork brain = CreateBrain();
+                NeuralNetwork brain = CreateBrainA();
                 Genome genome = populationsA[i];
 
                 brain.SetWeights(genome.genome);
@@ -129,7 +146,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
             for (int i = 0; i < chaimbotsB.Count; i++)
             {
-                NeuralNetwork brain = CreateBrain();
+                NeuralNetwork brain = CreateBrainB();
                 Genome genome = populationsB[i];
 
                 brain.SetWeights(genome.genome);
@@ -144,17 +161,23 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
             for (int i = 0; i < chaimbots.Count; i++)
             {
-                NeuralNetwork brain = CreateBrain();
-                Genome genome = new Genome(brain.GetTotalWeightsCount());
-
-                brain.SetWeights(genome.genome);
+                NeuralNetwork brain = null;
+                Genome genome = null;
 
                 if (chaimbots[i].Team == TEAM.A)
                 {
+                    brain = CreateBrainA();
+                    genome = new Genome(brain.GetTotalWeightsCount());
+
+                    brain.SetWeights(genome.genome);
                     populationsA.Add(genome);
                 }
                 else if (chaimbots[i].Team == TEAM.B)
                 {
+                    brain = CreateBrainB();
+                    genome = new Genome(brain.GetTotalWeightsCount());
+
+                    brain.SetWeights(genome.genome);
                     populationsB.Add(genome);
                 }
 
@@ -288,16 +311,27 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         data.Turns = Turns;
 
-        data.EliteCount = EliteCount;
-        data.MutationChance = MutationChance;
-        data.MutationRate = MutationRate;
+        data.A_EliteCount = A_EliteCount;
+        data.A_MutationChance = A_MutationChance;
+        data.A_MutationRate = A_MutationRate;
 
-        data.InputsCount = InputsCount;
-        data.HiddenLayers = HiddenLayers;
-        data.OutputsCount = OutputsCount;
-        data.NeuronsCountPerHL = NeuronsCountPerHL;
-        data.Bias = Bias;
-        data.P = P;
+        data.A_InputsCount = A_InputsCount;
+        data.A_HiddenLayers = A_HiddenLayers;
+        data.A_OutputsCount = A_OutputsCount;
+        data.A_NeuronsCountPerHL = A_NeuronsCountPerHL;
+        data.A_Bias = A_Bias;
+        data.A_P = A_P;
+
+        data.B_EliteCount = B_EliteCount;
+        data.B_MutationChance = B_MutationChance;
+        data.B_MutationRate = B_MutationRate;
+
+        data.B_InputsCount = B_InputsCount;
+        data.B_HiddenLayers = B_HiddenLayers;
+        data.B_OutputsCount = B_OutputsCount;
+        data.B_NeuronsCountPerHL = B_NeuronsCountPerHL;
+        data.B_Bias = B_Bias;
+        data.B_P = B_P;
 
         string dataJson = JsonUtility.ToJson(data, true);
         File.WriteAllText(path, dataJson);
@@ -337,16 +371,27 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
         Turns = data.Turns;
 
-        EliteCount = data.EliteCount;
-        MutationChance = data.MutationChance;
-        MutationRate = data.MutationRate;
+        A_EliteCount = data.A_EliteCount;
+        A_MutationChance = data.A_MutationChance;
+        A_MutationRate = data.A_MutationRate;
 
-        InputsCount = data.InputsCount;
-        HiddenLayers = data.HiddenLayers;
-        OutputsCount = data.OutputsCount;
-        NeuronsCountPerHL = data.NeuronsCountPerHL;
-        Bias = data.Bias;
-        P = data.P;
+        A_InputsCount = data.A_InputsCount;
+        A_HiddenLayers = data.A_HiddenLayers;
+        A_OutputsCount = data.A_OutputsCount;
+        A_NeuronsCountPerHL = data.A_NeuronsCountPerHL;
+        A_Bias = data.A_Bias;
+        A_P = data.A_P;
+
+        B_EliteCount = data.B_EliteCount;
+        B_MutationChance = data.B_MutationChance;
+        B_MutationRate = data.B_MutationRate;
+
+        B_InputsCount = data.B_InputsCount;
+        B_HiddenLayers = data.B_HiddenLayers;
+        B_OutputsCount = data.B_OutputsCount;
+        B_NeuronsCountPerHL = data.B_NeuronsCountPerHL;
+        B_Bias = data.B_Bias;
+        B_P = data.B_P;
 
         onStartGame?.Invoke(true);
     }
@@ -355,18 +400,34 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     #endregion
 
     #region PRIVATE_METHODS
-    private NeuralNetwork CreateBrain()
+    private NeuralNetwork CreateBrainA()
     {
         NeuralNetwork brain = new NeuralNetwork();
 
-        brain.AddFirstNeuronLayer(InputsCount, Bias, P);
+        brain.AddFirstNeuronLayer(A_InputsCount, A_Bias, A_P);
 
-        for (int i = 0; i < HiddenLayers; i++)
+        for (int i = 0; i < A_HiddenLayers; i++)
         {
-            brain.AddNeuronLayer(NeuronsCountPerHL, Bias, P);
+            brain.AddNeuronLayer(A_NeuronsCountPerHL, A_Bias, A_P);
         }
 
-        brain.AddNeuronLayer(OutputsCount, Bias, P);
+        brain.AddNeuronLayer(A_OutputsCount, A_Bias, A_P);
+
+        return brain;
+    }
+
+    private NeuralNetwork CreateBrainB()
+    {
+        NeuralNetwork brain = new NeuralNetwork();
+
+        brain.AddFirstNeuronLayer(B_InputsCount, B_Bias, B_P);
+
+        for (int i = 0; i < B_HiddenLayers; i++)
+        {
+            brain.AddNeuronLayer(B_NeuronsCountPerHL, B_Bias, B_P);
+        }
+
+        brain.AddNeuronLayer(B_OutputsCount, B_Bias, B_P);
 
         return brain;
     }
@@ -464,19 +525,19 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
             breedingGenomesB.Add(breedingChaimbotsB[i].Genome);
         }
 
-        Genome[] newGenomesA = genAlg.Epoch(breedingGenomesA.ToArray());
-        Genome[] newGenomesB = genAlg.Epoch(breedingGenomesB.ToArray());
+        Genome[] newGenomesA = genAlgA.Epoch(breedingGenomesA.ToArray());
+        Genome[] newGenomesB = genAlgB.Epoch(breedingGenomesB.ToArray());
 
         NeuralNetwork[] brainsA = new NeuralNetwork[newGenomesA.Length];
         for (int i = 0; i < brainsA.Length; i++)
         {
-            brainsA[i] = CreateBrain();
+            brainsA[i] = CreateBrainA();
         }
 
         NeuralNetwork[] brainsB = new NeuralNetwork[newGenomesB.Length];
         for (int i = 0; i < brainsB.Length; i++)
         {
-            brainsB[i] = CreateBrain();
+            brainsB[i] = CreateBrainB();
         }
 
         onCreateNewChaimbots?.Invoke(newGenomesA, brainsA, TEAM.A);
