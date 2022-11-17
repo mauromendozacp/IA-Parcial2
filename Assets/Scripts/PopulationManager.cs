@@ -492,7 +492,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     private void SurvivingChaimbots(List<Chaimbot> chaimbots)
     {
-        List<Chaimbot> survivingChaimbots = chaimbots.FindAll(c => c.FoodsConsumed == 1);
+        List<Chaimbot> survivingChaimbots = chaimbots.FindAll(c => c.FoodsConsumed >= 1);
 
         List<Chaimbot> survivingChaimbotsA = survivingChaimbots.FindAll(c => c.Team == TEAM.A);
         List<Chaimbot> survivingChaimbotsB = survivingChaimbots.FindAll(c => c.Team == TEAM.B);
@@ -535,23 +535,27 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         Genome[] newGenomesA = genAlgA.Epoch(breedingGenomesA.ToArray());
         Genome[] newGenomesB = genAlgB.Epoch(breedingGenomesB.ToArray());
 
-        NeuralNetwork[] brainsA = new NeuralNetwork[newGenomesA.Length];
-        for (int i = 0; i < brainsA.Length; i++)
+        if (newGenomesA.Length >= 2)
         {
-            brainsA[i] = CreateBrainA();
+            NeuralNetwork[] brainsA = new NeuralNetwork[newGenomesA.Length];
+            for (int i = 0; i < brainsA.Length; i++)
+            {
+                brainsA[i] = CreateBrainA();
+            }
+            onCreateNewChaimbots?.Invoke(newGenomesA, brainsA, TEAM.A);
+            populationsA.AddRange(newGenomesA);
         }
 
-        NeuralNetwork[] brainsB = new NeuralNetwork[newGenomesB.Length];
-        for (int i = 0; i < brainsB.Length; i++)
+        if (newGenomesB.Length >= 2)
         {
-            brainsB[i] = CreateBrainB();
+            NeuralNetwork[] brainsB = new NeuralNetwork[newGenomesB.Length];
+            for (int i = 0; i < brainsB.Length; i++)
+            {
+                brainsB[i] = CreateBrainB();
+            }
+            onCreateNewChaimbots?.Invoke(newGenomesB, brainsB, TEAM.B);
+            populationsB.AddRange(newGenomesB);
         }
-
-        onCreateNewChaimbots?.Invoke(newGenomesA, brainsA, TEAM.A);
-        onCreateNewChaimbots?.Invoke(newGenomesB, brainsB, TEAM.B);
-
-        populationsA.AddRange(newGenomesA);
-        populationsB.AddRange(newGenomesB);
     }
     #endregion
 }
