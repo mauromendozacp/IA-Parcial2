@@ -130,7 +130,7 @@ public class GameplayController : MonoBehaviour
     {
         Vector3 startPosition = new Vector3(-size / 2, 0f, -size / 2);
         int aIndex = 0;
-        int bIndex = 0;
+        int bIndex = size;
 
         for (int i = 0; i < chaimbots.Count; i++)
         {
@@ -140,11 +140,21 @@ public class GameplayController : MonoBehaviour
             {
                 index = new Vector2Int(aIndex, 0);
                 aIndex++;
+
+                if (aIndex > size)
+                {
+                    aIndex = 0;
+                }
             }
             else
             {
                 index = new Vector2Int(bIndex, size);
-                bIndex++;
+                bIndex--;
+
+                if (bIndex < 0)
+                {
+                    bIndex = size;
+                }
             }
 
             chaimbots[i].Index = index;
