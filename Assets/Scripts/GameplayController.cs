@@ -28,7 +28,6 @@ public class GameplayController : MonoBehaviour
 
     #region PRIVATE_FIELDS
     private List<Chaimbot> chaimbots = new List<Chaimbot>();
-    private List<Chaimbot> eatingChaimbots = new List<Chaimbot>();
     private List<Food> foods = new List<Food>();
 
     private int size = 0;
@@ -38,6 +37,10 @@ public class GameplayController : MonoBehaviour
     private bool isRunning = false;
     private bool isLoop = false;
     private int currentFollowAgent = 0;
+    #endregion
+
+    #region CONSTANTS
+    private const int probabilityToDie = 75;
     #endregion
 
     #region UNITY_CALLS
@@ -67,7 +70,7 @@ public class GameplayController : MonoBehaviour
                 turnsTimer = 0f;
 
                 ProcessChaimbots();
-                ProcessFoods();
+                ProcessChaimbotsInSameIndex();
 
                 PopulationManager.Instance.turnsLeft += isLoop ? 1 : -1;
 
@@ -106,7 +109,8 @@ public class GameplayController : MonoBehaviour
     {
         DestroyFoods();
         SpawnFoods();
-        ChaimbotsNextGeneration();
+
+        ProcessChaimbotsNextGeneration();
 
         PopulationManager.Instance.Epoch(chaimbots, SpawnNewChaimbots);
 
@@ -128,7 +132,7 @@ public class GameplayController : MonoBehaviour
 
     private void SetChaimbotsPositions()
     {
-        Vector3 startPosition = new Vector3(-size / 2, 0f, -size / 2);
+        Vector3 startPosition = new Vector3(-size / 2f, 0f, -size / 2f);
         int aIndexX = 0;
         int aIndexY = 0;
         int bIndexX = size;
@@ -167,29 +171,6 @@ public class GameplayController : MonoBehaviour
         }
     }
 
-    private Vector2Int GetRandomIndex(params Vector2Int[] usedIndexs)
-    {
-        Vector2Int index;
-        bool repeat;
-
-        do
-        {
-            repeat = false;
-
-            int x = Random.Range(0, size);
-            int y = Random.Range(1, size - 1);
-            index = new Vector2Int(x, y);
-
-            if (usedIndexs != null && usedIndexs.Length > 0)
-            {
-                repeat = usedIndexs.Contains(index);
-            }
-
-        } while (repeat);
-
-        return index;
-    }
-
     private Food GetNearFood(Vector3 position)
     {
         Food nearest = null;
@@ -213,14 +194,6 @@ public class GameplayController : MonoBehaviour
         return nearest;
     }
 
-    private void ChaimbotsNextGeneration()
-    {
-        for (int i = 0; i < chaimbots.Count; i++)
-        {
-            chaimbots[i].GenerationCount++;
-        }
-    }
-
     #region PROCESS
     private void ProcessChaimbots()
     {
@@ -233,54 +206,163 @@ public class GameplayController : MonoBehaviour
         }
     }
 
-    private void ProcessFoods()
+    private void ProcessChaimbotsInSameIndex()
     {
-        for (int i = 0; i < foods.Count; i++)
+        Dictionary<Vector2Int, List<Chaimbot>> chaimbotsSameIndex = new Dictionary<Vector2Int, List<Chaimbot>>();
+        for (int i = 0; i < chaimbots.Count; i++)
         {
-            bool foodConsumed = false;
-            eatingChaimbots.Clear();
+            if (chaimbots[i].Dead || chaimbotsSameIndex.ContainsKey(chaimbots[i].Index)) continue;
+            bool inFoodIndex = CheckIndexInFood(chaimbots[i].Index);
 
             for (int j = 0; j < chaimbots.Count; j++)
             {
-                if (foods[i].Index == chaimbots[j].Index)
+                if (i == j || chaimbots[j].Dead) continue;
+
+                if (chaimbots[i].Index == chaimbots[j].Index || inFoodIndex)
                 {
-                    eatingChaimbots.Add(chaimbots[j]);
+                    if (!chaimbotsSameIndex.ContainsKey(chaimbots[i].Index))
+                    {
+                        chaimbotsSameIndex.Add(chaimbots[i].Index, new List<Chaimbot>() { chaimbots[i] });
+                    }
+
+                    if (!inFoodIndex)
+                    {
+                        chaimbotsSameIndex[chaimbots[i].Index].Add(chaimbots[j]);
+                    }
                 }
             }
+        }
 
-            if (eatingChaimbots.Count > 1)
+        foreach (KeyValuePair<Vector2Int, List<Chaimbot>> entry in chaimbotsSameIndex)
+        {
+            if (CheckIndexInFood(entry.Key))
             {
-                eatingChaimbots.RemoveAll(c => !c.ToStay);
-            }
+                List<Chaimbot> eatingChaimbots = entry.Value;
+                bool foodConsumed = false;
 
-            if (eatingChaimbots.Count > 0)
-            {
-                int chaimbotEatingIndex = 0;
-
-                if (eatingChaimbots.Count >= 2)
+                if (eatingChaimbots.Count > 1)
                 {
-                    chaimbotEatingIndex = Random.Range(0, eatingChaimbots.Count);
+                    eatingChaimbots.RemoveAll(c => !c.ToStay);
 
-                    for (int j = 0; j < eatingChaimbots.Count; j++)
+                    if (eatingChaimbots.Count > 0)
                     {
-                        if (j != chaimbotEatingIndex)
+                        if (!CheckSameTeamsInList(eatingChaimbots))
                         {
-                            eatingChaimbots[j].Death();
+                            TEAM executeTeam = GetRandomTeam();
+
+                            for (int i = 0; i < eatingChaimbots.Count; i++)
+                            {
+                                if (eatingChaimbots[i].Team == executeTeam)
+                                {
+                                    eatingChaimbots[i].Death();
+                                }
+                            }
+
+                            eatingChaimbots.RemoveAll(c => c.Team == executeTeam);
+                        }
+
+                        int chaimbotEatingIndex = 0;
+                        if (eatingChaimbots.Count > 1)
+                        {
+                            chaimbotEatingIndex = Random.Range(0, eatingChaimbots.Count);
+
+                            for (int i = 0; i < eatingChaimbots.Count; i++)
+                            {
+                                if (i != chaimbotEatingIndex)
+                                {
+                                    //hacer que se mueva
+                                }
+                            }
+                        }
+
+                        eatingChaimbots[chaimbotEatingIndex].ConsumeFood();
+                        foodConsumed = true;
+                    }
+                }
+                else
+                {
+                    eatingChaimbots[0].ConsumeFood();
+                    foodConsumed = true;
+                }
+
+                if (foodConsumed)
+                {
+                    Food food = foods.Find(f => f.Index == entry.Key);
+                    if (food != null)
+                    {
+                        Destroy(food.gameObject);
+                        foods.Remove(food);
+                    }
+                }
+            }
+            else
+            {
+                List<Chaimbot> chaimbotsCowards = entry.Value.FindAll(c => !c.ToStay);
+                if (!CheckSameTeamsInList(chaimbotsCowards))
+                {
+                    for (int i = 0; i < chaimbotsCowards.Count; i++)
+                    {
+                        int prob = Random.Range(0, 101);
+                        if (prob < probabilityToDie)
+                        {
+                            chaimbotsCowards[i].Death();
                         }
                     }
                 }
 
-                eatingChaimbots[chaimbotEatingIndex].ConsumeFood();
-                foodConsumed = true;
-            }
+                entry.Value.RemoveAll(c => !c.ToStay);
+                if (entry.Value.Count > 1 && !CheckSameTeamsInList(entry.Value))
+                {
+                    TEAM executeTeam = GetRandomTeam();
 
-            if (foodConsumed)
-            {
-                Destroy(foods[i].gameObject);
-                foods.RemoveAt(i);
-                i--;
+                    for (int i = 0; i < entry.Value.Count; i++)
+                    {
+                        if (entry.Value[i].Team == executeTeam)
+                        {
+                            entry.Value[i].Death();
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private void ProcessChaimbotsNextGeneration()
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].GenerationCount++;
+        }
+    }
+    #endregion
+
+    #region RANDOM
+    private Vector2Int GetRandomIndex(params Vector2Int[] usedIndexs)
+    {
+        Vector2Int index;
+        bool repeat;
+
+        do
+        {
+            repeat = false;
+
+            int x = Random.Range(0, size);
+            int y = Random.Range(1, size - 1);
+            index = new Vector2Int(x, y);
+
+            if (usedIndexs != null && usedIndexs.Length > 0)
+            {
+                repeat = usedIndexs.Contains(index);
+            }
+
+        } while (repeat);
+
+        return index;
+    }
+
+    private TEAM GetRandomTeam()
+    {
+        return (TEAM)Random.Range((int)TEAM.NONE + 1, (int)TEAM.COUNT) + 1;
     }
     #endregion
 
@@ -385,6 +467,37 @@ public class GameplayController : MonoBehaviour
     private bool CheckEndGame()
     {
         return chaimbots.Count == 0 || foods.Count == 0;
+    }
+
+    private bool CheckIndexInFood(Vector2Int checkIndex)
+    {
+        for (int i = 0; i < foods.Count; i++)
+        {
+            if (foods[i].Index == checkIndex)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool CheckSameTeamsInList(List<Chaimbot> auxChaimbots)
+    {
+        if (auxChaimbots.Count > 0)
+        {
+            TEAM team = auxChaimbots[0].Team;
+
+            for (int i = 1; i < auxChaimbots.Count; i++)
+            {
+                if (auxChaimbots[i].Team != team)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
     #endregion
 

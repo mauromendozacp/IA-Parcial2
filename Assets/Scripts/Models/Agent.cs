@@ -4,7 +4,9 @@ public enum TEAM
 {
     NONE,
     A,
-    B
+    B,
+
+    COUNT
 }
 
 public abstract class Agent : MonoBehaviour
