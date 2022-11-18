@@ -42,10 +42,10 @@ public class Chaimbot : Agent
     #region PROPERTIES
     public Vector2Int Index { get => index; set => index = value; }
     public int GenerationCount { get => generationCount; set => generationCount = value; }
+    public bool ToStay { get => toStay; set => toStay = value; }
 
     public int FoodsConsumed { get => foodsConsumed; }
     public TEAM Team { get => team; }
-    public bool ToStay { get => toStay; }
     public bool Dead { get => dead; }
     #endregion
 
@@ -65,7 +65,7 @@ public class Chaimbot : Agent
 
     public void Move(float lerp)
     {
-        if (dead) return;
+        if (dead || toStay) return;
 
         transform.position = Vector3.Lerp(startPosition, movePosition, lerp);
 
@@ -95,6 +95,7 @@ public class Chaimbot : Agent
         movePosition = transform.position;
 
         generationCount++;
+        toStay = false;
 
         OnReset();
     }
@@ -135,9 +136,12 @@ public class Chaimbot : Agent
 
     protected override void ProcessOutputs(float[] outputs)
     {
-        transform.position = movePosition;
-        startPosition = transform.position;
-        index = moveIndex;
+        if (!toStay)
+        {
+            transform.position = movePosition;
+            startPosition = transform.position;
+            index = moveIndex;
+        }
 
         if (outputs != null && outputs.Length >= 3)
         {

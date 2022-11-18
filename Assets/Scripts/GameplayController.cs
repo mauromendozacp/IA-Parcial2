@@ -270,7 +270,7 @@ public class GameplayController : MonoBehaviour
                             {
                                 if (i != chaimbotEatingIndex)
                                 {
-                                    //hacer que se mueva
+                                    eatingChaimbots[i].ToStay = false;
                                 }
                             }
                         }
