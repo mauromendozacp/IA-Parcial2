@@ -36,9 +36,11 @@ public class GameplaySimulationView : MonoBehaviour
     [SerializeField] private TMP_Text chaimbotsATxt = null;
     [SerializeField] private TMP_Text foodsATxt = null;
     [SerializeField] private TMP_Text deathsATxt = null;
+    [SerializeField] private TMP_Text extinctsATxt = null;
     [SerializeField] private TMP_Text chaimbotsBTxt = null;
     [SerializeField] private TMP_Text foodsBTxt = null;
     [SerializeField] private TMP_Text deathsBTxt = null;
+    [SerializeField] private TMP_Text extinctsBTxt = null;
 
     [Header("Gameplay Buttons Settings")]
     [SerializeField] private Button pauseBtn = null;
@@ -75,9 +77,11 @@ public class GameplaySimulationView : MonoBehaviour
     private string chaimbotsAText = string.Empty;
     private string foodsAText = string.Empty;
     private string deathsAText = string.Empty;
+    private string extinctsAText = string.Empty;
     private string chaimbotsBText = string.Empty;
     private string foodsBText = string.Empty;
     private string deathsBText = string.Empty;
+    private string extinctsBText = string.Empty;
     #endregion
 
     #region UNITY_CALLS
@@ -104,9 +108,11 @@ public class GameplaySimulationView : MonoBehaviour
         chaimbotsATxt.text = string.Format(chaimbotsAText, PopulationManager.Instance.chaimbotsA);
         foodsATxt.text = string.Format(foodsAText, PopulationManager.Instance.foodsA);
         deathsATxt.text = string.Format(deathsAText, PopulationManager.Instance.deathsA);
+        extinctsATxt.text = string.Format(extinctsAText, PopulationManager.Instance.extinctsA);
         chaimbotsBTxt.text = string.Format(chaimbotsBText, PopulationManager.Instance.chaimbotsB);
         foodsBTxt.text = string.Format(foodsBText, PopulationManager.Instance.foodsB);
         deathsBTxt.text = string.Format(deathsBText, PopulationManager.Instance.deathsB);
+        extinctsBTxt.text = string.Format(extinctsBText, PopulationManager.Instance.extinctsB);
     }
     #endregion
 
@@ -136,9 +142,11 @@ public class GameplaySimulationView : MonoBehaviour
         chaimbotsAText = chaimbotsATxt.text;
         foodsAText = foodsATxt.text;
         deathsAText = deathsATxt.text;
+        extinctsAText = extinctsATxt.text;
         chaimbotsBText = chaimbotsBTxt.text;
         foodsBText = foodsBTxt.text;
         deathsBText = deathsBTxt.text;
+        extinctsBText = extinctsBTxt.text;
 
         pauseBtn.onClick.AddListener(() => onPauseGame?.Invoke());
         saveBtn.onClick.AddListener(() => PopulationManager.Instance.SaveData());
