@@ -532,10 +532,29 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
             breedingGenomesB.Add(breedingChaimbotsB[i].Genome);
         }
 
-        Genome[] newGenomesA = genAlgA.Epoch(breedingGenomesA.ToArray());
-        Genome[] newGenomesB = genAlgB.Epoch(breedingGenomesB.ToArray());
+        Genome[] newGenomesA = null;
+        if (breedingGenomesA.Count >= 2)
+        {
+            if (breedingChaimbotsA.Count % 2 != 0)
+            {
+                breedingChaimbotsA.RemoveAt(breedingChaimbotsA.Count - 1);
+            }
 
-        if (newGenomesA.Length >= 2)
+            newGenomesA = genAlgA.Epoch(breedingGenomesA.ToArray());
+        }
+
+        Genome[] newGenomesB = null;
+        if (breedingGenomesB.Count >= 2)
+        {
+            if (breedingGenomesB.Count % 2 != 0)
+            {
+                breedingGenomesB.RemoveAt(breedingGenomesB.Count - 1);
+            }
+
+            newGenomesB = genAlgB.Epoch(breedingGenomesB.ToArray());
+        }
+
+        if (newGenomesA != null)
         {
             NeuralNetwork[] brainsA = new NeuralNetwork[newGenomesA.Length];
             for (int i = 0; i < brainsA.Length; i++)
@@ -546,7 +565,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
             populationsA.AddRange(newGenomesA);
         }
 
-        if (newGenomesB.Length >= 2)
+        if (newGenomesB != null)
         {
             NeuralNetwork[] brainsB = new NeuralNetwork[newGenomesB.Length];
             for (int i = 0; i < brainsB.Length; i++)
