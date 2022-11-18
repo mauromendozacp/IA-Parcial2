@@ -10,16 +10,23 @@ public enum CAMERA_MODE
 public class CameraController : MonoBehaviour
 {
     #region EXPOSED_FIELDS
-    [SerializeField] private Transform initialPos = null;
+    [Header("Camera Locked Settings")]
+    [SerializeField] private Transform startLockedPos = null;
+
+    [Header("Camera Follow Settings")]
     [SerializeField] private Vector3 playerOffset = Vector3.zero;
     [SerializeField] private float smooth = 0f;
-    [SerializeField] private float sensivity = 0f;
+
+    [Header("Camera Free Settings")]
+    [SerializeField] private Transform startFreePos = null;
+    [SerializeField] private float moveSpeed = 0f;
+    [SerializeField] private float zoomSpeed = 0f;
     #endregion
 
     #region PRIVATE_FIELDS
     private CAMERA_MODE mode = CAMERA_MODE.LOCKED;
 
-    private Chaimbot followChaimbot= null;
+    private Chaimbot followChaimbot = null;
     #endregion
 
     #region UNITY_CALLS
@@ -42,18 +49,22 @@ public class CameraController : MonoBehaviour
     #region PUBLIC_METHODS
     public void StartCamera()
     {
-        mode = CAMERA_MODE.LOCKED;
+        SetMode(CAMERA_MODE.LOCKED);
     }
 
     public void SetMode(CAMERA_MODE mode)
     {
         this.mode = mode;
 
-        Cursor.lockState = mode == CAMERA_MODE.FREE ? CursorLockMode.Locked : CursorLockMode.None;
-
         if (mode != CAMERA_MODE.FOLLOW)
         {
             PopulationManager.Instance.UpdateFollowChaimbotData(null);
+        }
+
+        if (mode == CAMERA_MODE.FREE)
+        {
+            transform.position = startFreePos.position;
+            transform.rotation = startFreePos.rotation;
         }
     }
 
@@ -66,8 +77,8 @@ public class CameraController : MonoBehaviour
     #region PRIVATE_METHODS
     private void Locked()
     {
-        transform.position = initialPos.position;
-        transform.rotation = initialPos.rotation;
+        transform.position = startLockedPos.position;
+        transform.rotation = startLockedPos.rotation;
     }
 
     private void Follow()
@@ -83,29 +94,25 @@ public class CameraController : MonoBehaviour
 
     private void Free()
     {
-        float rotX = Input.GetAxis("Mouse X") * sensivity * Time.deltaTime;
-        float rotY = Input.GetAxis("Mouse Y") * -sensivity * Time.deltaTime;
-
-        transform.Rotate(Vector3.up * rotX);
-        transform.Rotate(Vector3.right, Mathf.Clamp(rotY, -90f, 90f));
-
         if (Input.GetKey(KeyCode.W))
         {
-            transform.position += transform.forward * (sensivity / 2) * Time.deltaTime;
+            transform.position += transform.up * moveSpeed * Time.deltaTime;
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            transform.position -= transform.forward * (sensivity / 2) * Time.deltaTime;
+            transform.position -= transform.up * moveSpeed * Time.deltaTime;
         }
 
         if (Input.GetKey(KeyCode.A))
         {
-            transform.position -= transform.right * (sensivity / 2) * Time.deltaTime;
+            transform.position -= transform.right * moveSpeed * Time.deltaTime;
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            transform.position += transform.right * (sensivity / 2) * Time.deltaTime;
+            transform.position += transform.right * moveSpeed * Time.deltaTime;
         }
+
+        transform.position += transform.forward * Input.mouseScrollDelta.y * zoomSpeed * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.Escape))
         {

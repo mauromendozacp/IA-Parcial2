@@ -89,6 +89,8 @@ public class GameplayController : MonoBehaviour
         startView.Toggle(false);
         gameplayView.Toggle(true);
 
+        cameraController.StartCamera();
+
         size = PopulationManager.Instance.PopulationCount;
         foodSize = size * 2;
 
