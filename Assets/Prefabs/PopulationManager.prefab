@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6984612362826712929
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6984612362826712931}
+  - component: {fileID: 6984612362826712928}
+  m_Layer: 0
+  m_Name: PopulationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6984612362826712931
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6984612362826712929}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6984612362826712928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6984612362826712929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59c897ce579df0a489d5e4501656ac13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  brainDataJson: {fileID: 4900000, guid: 330d373c83651324d8affc19b3fbbcab, type: 3}
+  PopulationCount: 100
+  Turns: 100
+  IterationCount: 1
+  AgentMaxGeneration: 3
+  A_EliteCount: 10
+  A_MutationChance: 0.5
+  A_MutationRate: 0.25
+  A_InputsCount: 4
+  A_HiddenLayers: 2
+  A_OutputsCount: 3
+  A_NeuronsCountPerHL: 10
+  A_Bias: 1
+  A_P: 0.75
+  B_EliteCount: 4
+  B_MutationChance: 0.1
+  B_MutationRate: 0.01
+  B_InputsCount: 4
+  B_HiddenLayers: 1
+  B_OutputsCount: 3
+  B_NeuronsCountPerHL: 7
+  B_Bias: 1
+  B_P: 0.5
+  generation: 0
+  turnsLeft: 0
+  bestFitness: 0
+  avgFitness: 0
+  worstFitness: 0
+  agentNro: 0
+  agentTeam: 
+  agentFitness: 0
+  agentFoodsConsumed: 0
+  agentGeneration: 0
+  row: 0
+  column: 0
+  totalChaimbots: 0
+  totalFoodsConsumed: 0
+  totalDeaths: 0
+  chaimbotsA: 0
+  foodsA: 0
+  deathsA: 0
+  extinctsA: 0
+  chaimbotsB: 0
+  foodsB: 0
+  deathsB: 0
+  extinctsB: 0

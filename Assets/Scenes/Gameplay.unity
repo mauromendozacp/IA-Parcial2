@@ -12792,9 +12792,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startLockedPos: {fileID: 443293653}
-  startFreePos: {fileID: 1379839514}
   playerOffset: {x: 0, y: 8, z: -8}
   smooth: 1
+  startFreePos: {fileID: 1379839514}
   moveSpeed: 85
   zoomSpeed: 400
 --- !u!1 &968359536
@@ -21482,96 +21482,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1564527928
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1564527930}
-  - component: {fileID: 1564527929}
-  m_Layer: 0
-  m_Name: PopulationManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1564527929
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1564527928}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59c897ce579df0a489d5e4501656ac13, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  brainDataJson: {fileID: 4900000, guid: 330d373c83651324d8affc19b3fbbcab, type: 3}
-  PopulationCount: 100
-  Turns: 100
-  IterationCount: 1
-  AgentMaxGeneration: 3
-  A_EliteCount: 4
-  A_MutationChance: 0.1
-  A_MutationRate: 0.01
-  A_InputsCount: 4
-  A_HiddenLayers: 1
-  A_OutputsCount: 3
-  A_NeuronsCountPerHL: 7
-  A_Bias: 1
-  A_P: 0.5
-  B_EliteCount: 4
-  B_MutationChance: 0.1
-  B_MutationRate: 0.01
-  B_InputsCount: 4
-  B_HiddenLayers: 1
-  B_OutputsCount: 3
-  B_NeuronsCountPerHL: 7
-  B_Bias: 1
-  B_P: 0.5
-  generation: 0
-  turnsLeft: 0
-  bestFitness: 0
-  avgFitness: 0
-  worstFitness: 0
-  agentNro: 0
-  agentTeam: 
-  agentFitness: 0
-  agentFoodsConsumed: 0
-  agentGeneration: 0
-  row: 0
-  column: 0
-  totalChaimbots: 0
-  totalFoodsConsumed: 0
-  totalDeaths: 0
-  chaimbotsA: 0
-  foodsA: 0
-  deathsA: 0
-  extinctsA: 0
-  chaimbotsB: 0
-  foodsB: 0
-  deathsB: 0
-  extinctsB: 0
---- !u!4 &1564527930
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1564527928}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1567117708
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28203,3 +28113,60 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5240e1ff5e2944d46b8de0e9a301e2e8, type: 3}
+--- !u!1001 &6984612363451648601
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6984612362826712929, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_Name
+      value: PopulationManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6984612362826712931, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8d14781dce278d940a75713706c13ae5, type: 3}
