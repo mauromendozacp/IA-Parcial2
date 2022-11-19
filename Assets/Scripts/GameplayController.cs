@@ -567,12 +567,9 @@ public class GameplayController : MonoBehaviour
     {
         isRunning = !isRunning;
 
-        if (!isRunning)
+        for (int i = 0; i < chaimbots.Count; i++)
         {
-            for (int i = 0; i < chaimbots.Count; i++)
-            {
-                chaimbots[i].SwitchMovement();
-            }
+            chaimbots[i].SwitchMovement();
         }
     }
 
