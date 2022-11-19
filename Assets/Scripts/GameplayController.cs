@@ -24,6 +24,7 @@ public class GameplayController : MonoBehaviour
     [Header("UI Settings")]
     [SerializeField] private StartSimulationView startView = null;
     [SerializeField] private GameplaySimulationView gameplayView = null;
+    [SerializeField] private EndSimulationView endView = null;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -47,9 +48,11 @@ public class GameplayController : MonoBehaviour
     {
         startView.Init(StartGame);
         gameplayView.Init(PauseGame, StopSimulation, ExitGame, LockedCamera, FollowCamera, FreeCamera);
+        endView.Init(StopSimulation);
 
         startView.Toggle(true);
         gameplayView.Toggle(false);
+        endView.Toggle(false);
     }
 
     private void Update()
@@ -68,16 +71,24 @@ public class GameplayController : MonoBehaviour
             {
                 turnsTimer = 0f;
 
-                SetChaimbotsProcess(true);
+                SetChaimbotsProcess();
+
                 SetNearFoodInChaimbots();
                 ProcessChaimbotsInSameIndex();
+
                 UpdateChaimbotsTree();
 
-                PopulationManager.Instance.turnsLeft--;
-
-                if (PopulationManager.Instance.turnsLeft <= 0)
+                if (CheckEndGame())
                 {
-                    ResetSimulation();
+                    isRunning = false;
+                }
+                else
+                {
+                    PopulationManager.Instance.turnsLeft--;
+                    if (PopulationManager.Instance.turnsLeft <= 0)
+                    {
+                        ResetSimulation();
+                    }
                 }
             }
         }
@@ -121,6 +132,33 @@ public class GameplayController : MonoBehaviour
         LockedCamera();
     }
 
+    private void EndSimulation()
+    {
+        bool noWin = chaimbots.Count == 0;
+        TEAM winTeam = TEAM.NONE;
+
+        int countA = GetTeamChaimbotsCount(TEAM.A);
+        int countB = GetTeamChaimbotsCount(TEAM.B);
+
+        float fitnessA = GetTeamChaimbotsFitness(TEAM.A);
+        float fitnessB = GetTeamChaimbotsFitness(TEAM.B);
+
+        if (countA > countB)
+        {
+            winTeam = TEAM.A;
+        }
+        else if (countA < countB)
+        {
+            winTeam = TEAM.B;
+        }
+
+        SwitchMovementChaimbots();
+        endView.ConfigurePanel(noWin, winTeam, fitnessA, fitnessB);
+
+        gameplayView.Toggle(false);
+        endView.Toggle(true);
+    }
+
     private void UpdateChaimbotsGeneration()
     {
         for (int i = 0; i < chaimbots.Count; i++)
@@ -129,11 +167,11 @@ public class GameplayController : MonoBehaviour
         }
     }
 
-    private void SetChaimbotsProcess(bool process)
+    private void SetChaimbotsProcess()
     {
         for (int i = 0; i < chaimbots.Count; i++)
         {
-            chaimbots[i].Process = process;
+            chaimbots[i].Process = true;
             chaimbots[i].Lerp = 0f;
             chaimbots[i].UpdateTree();
         }
@@ -153,6 +191,14 @@ public class GameplayController : MonoBehaviour
         for (int i = 0; i < chaimbots.Count; i++)
         {
             chaimbots[i].UpdateTree();
+        }
+    }
+
+    private void SwitchMovementChaimbots()
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].SwitchMovement();
         }
     }
 
@@ -203,6 +249,34 @@ public class GameplayController : MonoBehaviour
         {
             chaimbots[i].SetNearFood(GetNearFood(chaimbots[i].transform.position));
         }
+    }
+
+    private float GetTeamChaimbotsFitness(TEAM team)
+    {
+        float fitness = 0f;
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            if (chaimbots[i].Team == team)
+            {
+                fitness += chaimbots[i].Fitness;
+            }
+        }
+
+        return fitness;
+    }
+
+    private int GetTeamChaimbotsCount(TEAM team)
+    {
+        int count = 0;
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            if (chaimbots[i].Team == team)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private Food GetNearFood(Vector3 position)
@@ -477,7 +551,14 @@ public class GameplayController : MonoBehaviour
     #region CHECKS
     private bool CheckEndGame()
     {
-        return chaimbots.Count == 0 || foods.Count == 0;
+        bool endGame = chaimbots.Count == 0 || foods.Count == 0;
+
+        if (endGame)
+        {
+            EndSimulation();
+        }
+
+        return endGame;
     }
 
     private bool CheckIndexInFood(Vector2Int checkIndex)
@@ -567,10 +648,7 @@ public class GameplayController : MonoBehaviour
     {
         isRunning = !isRunning;
 
-        for (int i = 0; i < chaimbots.Count; i++)
-        {
-            chaimbots[i].SwitchMovement();
-        }
+        SwitchMovementChaimbots();
     }
 
     private void StopSimulation()
@@ -584,6 +662,7 @@ public class GameplayController : MonoBehaviour
 
         startView.Toggle(true);
         gameplayView.Toggle(false);
+        endView.Toggle(false);
     }
 
     private void ExitGame()
