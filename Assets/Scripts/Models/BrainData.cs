@@ -31,4 +31,14 @@ public class BrainData
     public int B_NeuronsCountPerHL = 0;
     public float B_Bias = 0;
     public float B_P = 0f;
+
+    public int TotalChaimbotsA = 0;
+    public int TotalFoodsA = 0;
+    public int TotalDeathsA = 0;
+    public int TotalExtinctsA = 0;
+
+    public int TotalChaimbotsB = 0;
+    public int TotalFoodsB = 0;
+    public int TotalDeathsB = 0;
+    public int TotalExtinctsB = 0;
 }

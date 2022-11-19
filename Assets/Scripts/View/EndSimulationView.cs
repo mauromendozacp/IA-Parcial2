@@ -14,12 +14,14 @@ public class EndSimulationView : MonoBehaviour
     [SerializeField] private Button backBtn = null;
 
     [Header("Info Settings")]
+    [SerializeField] private TMP_Text spawnChaimbotsATxt = null;
     [SerializeField] private TMP_Text chaimbotsATxt = null;
     [SerializeField] private TMP_Text foodsATxt = null;
     [SerializeField] private TMP_Text deathsATxt = null;
     [SerializeField] private TMP_Text extinctsATxt = null;
     [SerializeField] private TMP_Text fitnessATxt = null;
 
+    [SerializeField] private TMP_Text spawnChaimbotsBTxt = null;
     [SerializeField] private TMP_Text chaimbotsBTxt = null;
     [SerializeField] private TMP_Text foodsBTxt = null;
     [SerializeField] private TMP_Text deathsBTxt = null;
@@ -28,12 +30,14 @@ public class EndSimulationView : MonoBehaviour
     #endregion
 
     #region PRIVATE_FIELDS
+    private string spawnChaimbotsAText = string.Empty;
     private string chaimbotsAText = string.Empty;
     private string foodsAText = string.Empty;
     private string deathsAText = string.Empty;
     private string extinctsAText = string.Empty;
     private string fitnessAText = string.Empty;
 
+    private string spawnChaimbotsBText = string.Empty;
     private string chaimbotsBText = string.Empty;
     private string foodsBText = string.Empty;
     private string deathsBText = string.Empty;
@@ -51,12 +55,14 @@ public class EndSimulationView : MonoBehaviour
     #region PUBLIC_METHODS
     public void Init(Action onBackMenu)
     {
+        spawnChaimbotsAText = spawnChaimbotsATxt.text;
         chaimbotsAText = chaimbotsATxt.text;
         foodsAText = foodsATxt.text;
         deathsAText = deathsATxt.text;
         extinctsAText = extinctsATxt.text;
         fitnessAText = fitnessATxt.text;
 
+        spawnChaimbotsBText = spawnChaimbotsBTxt.text;
         chaimbotsBText = chaimbotsBTxt.text;
         foodsBText = foodsBTxt.text;
         deathsBText = deathsBTxt.text;
@@ -70,15 +76,17 @@ public class EndSimulationView : MonoBehaviour
     {
         ConfigureTitle(noWin, winTeam);
 
+        spawnChaimbotsATxt.text = string.Format(spawnChaimbotsAText, PopulationManager.Instance.totalChaimbotsA);
         chaimbotsATxt.text = string.Format(chaimbotsAText, PopulationManager.Instance.chaimbotsA);
-        foodsATxt.text = string.Format(foodsAText, PopulationManager.Instance.foodsA);
-        deathsATxt.text = string.Format(deathsAText, PopulationManager.Instance.deathsA);
+        foodsATxt.text = string.Format(foodsAText, PopulationManager.Instance.totalFoodsConsumedA);
+        deathsATxt.text = string.Format(deathsAText, PopulationManager.Instance.totalDeathsA);
         extinctsATxt.text = string.Format(extinctsAText, PopulationManager.Instance.extinctsA);
         fitnessATxt.text = string.Format(fitnessAText, fitnessA);
 
+        spawnChaimbotsBTxt.text = string.Format(spawnChaimbotsBText, PopulationManager.Instance.totalChaimbotsB);
         chaimbotsBTxt.text = string.Format(chaimbotsBText, PopulationManager.Instance.chaimbotsB);
-        foodsBTxt.text = string.Format(foodsBText, PopulationManager.Instance.foodsB);
-        deathsBTxt.text = string.Format(deathsBText, PopulationManager.Instance.deathsB);
+        foodsBTxt.text = string.Format(foodsBText, PopulationManager.Instance.totalFoodsConsumedB);
+        deathsBTxt.text = string.Format(deathsBText, PopulationManager.Instance.totalDeathsB);
         extinctsBTxt.text = string.Format(extinctsBText, PopulationManager.Instance.extinctsB);
         fitnessBTxt.text = string.Format(fitnessBText, fitnessB);
     }

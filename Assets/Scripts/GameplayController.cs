@@ -137,6 +137,8 @@ public class GameplayController : MonoBehaviour
         bool noWin = chaimbots.Count == 0;
         TEAM winTeam = TEAM.NONE;
 
+        PopulationManager.Instance.UpdateGameplayData();
+
         int countA = GetTeamChaimbotsCount(TEAM.A);
         int countB = GetTeamChaimbotsCount(TEAM.B);
 

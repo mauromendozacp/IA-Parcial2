@@ -59,6 +59,14 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [HideInInspector] public int totalFoodsConsumed = 0;
     [HideInInspector] public int totalDeaths = 0;
 
+    [HideInInspector] public int totalChaimbotsA = 0;
+    [HideInInspector] public int totalFoodsConsumedA = 0;
+    [HideInInspector] public int totalDeathsA = 0;
+
+    [HideInInspector] public int totalChaimbotsB = 0;
+    [HideInInspector] public int totalFoodsConsumedB = 0;
+    [HideInInspector] public int totalDeathsB = 0;
+
     [HideInInspector] public int chaimbotsA = 0;
     [HideInInspector] public int foodsA = 0;
     [HideInInspector] public int deathsA = 0;
@@ -78,7 +86,6 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     private List<Genome> populationsA = new List<Genome>();
     private List<Genome> populationsB = new List<Genome>();
 
-    private bool dataLoaded = false;
     private string dataPath = string.Empty;
     private string fileName = "/Data/brain_data.json";
     #endregion
@@ -126,8 +133,6 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     #region PUBLIC_METHODS
     public void StartSimulation(List<Chaimbot> chaimbots, bool dataLoaded)
     {
-        this.dataLoaded = dataLoaded;
-
         genAlgA = new GeneticAlgorithm(A_EliteCount, A_MutationChance, A_MutationRate);
         genAlgB = new GeneticAlgorithm(B_EliteCount, B_MutationChance, B_MutationRate);
 
@@ -204,12 +209,23 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         totalFoodsConsumed = 0;
         foodsA = 0;
         foodsB = 0;
-        extinctsA = 0;
-
+        
         totalDeaths = 0;
         deathsA = 0;
         deathsB = 0;
-        extinctsB = 0;
+
+        if (!dataLoaded)
+        {
+            totalChaimbotsA = 0;
+            totalFoodsConsumedA = 0;
+            totalDeathsA = 0;
+            extinctsA = 0;
+
+            totalChaimbotsB = 0;
+            totalFoodsConsumedB = 0;
+            totalDeathsB = 0;
+            extinctsB = 0;
+        }
     }
 
     public void Epoch(List<Chaimbot> chaimbots, Action<Genome[], NeuralNetwork[], TEAM> onCreateNewChaimbots)
@@ -233,14 +249,27 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         populations.AddRange(populationsA);
         populations.AddRange(populationsB);
 
-        totalChaimbots = populations.Count;
-        chaimbotsA = populationsA.Count;
-        chaimbotsB = populationsB.Count;
+        UpdateGameplayData();
 
         foodsA = 0;
         foodsB = 0;
         deathsA = 0;
         deathsB = 0;
+    }
+
+    public void UpdateGameplayData()
+    {
+        totalChaimbots = populations.Count;
+        chaimbotsA = populationsA.Count;
+        chaimbotsB = populationsB.Count;
+
+        totalChaimbotsA += chaimbotsA;
+        totalFoodsConsumedA += foodsA;
+        totalDeathsA += deathsA;
+
+        totalChaimbotsB += chaimbotsB;
+        totalFoodsConsumedB += foodsB;
+        totalDeathsB += deathsB;
     }
 
     public void UpdateFollowChaimbotData(Chaimbot chaimbot)
@@ -347,6 +376,16 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         data.B_Bias = B_Bias;
         data.B_P = B_P;
 
+        data.TotalChaimbotsA = totalChaimbotsA;
+        data.TotalFoodsA = totalFoodsConsumedA;
+        data.TotalDeathsA = totalDeathsA;
+        data.TotalExtinctsA = extinctsA;
+
+        data.TotalChaimbotsB = totalChaimbotsB;
+        data.TotalFoodsB = totalFoodsConsumedB;
+        data.TotalDeathsB = totalDeathsB;
+        data.TotalExtinctsB = extinctsB;
+
         string dataJson = JsonUtility.ToJson(data, true);
         File.WriteAllText(path, dataJson);
     }
@@ -406,6 +445,16 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         B_NeuronsCountPerHL = data.B_NeuronsCountPerHL;
         B_Bias = data.B_Bias;
         B_P = data.B_P;
+
+        totalChaimbotsA = data.TotalChaimbotsA;
+        totalFoodsConsumedA = data.TotalFoodsA;
+        totalDeathsA = data.TotalDeathsA;
+        extinctsA = data.TotalExtinctsA;
+
+        totalChaimbotsB = data.TotalChaimbotsB;
+        totalFoodsConsumedB = data.TotalFoodsB;
+        totalDeathsB = data.TotalDeathsB;
+        extinctsB = data.TotalExtinctsB;
 
         onStartGame?.Invoke(true);
     }
