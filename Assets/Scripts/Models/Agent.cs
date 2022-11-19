@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public enum TEAM
 {
     NONE,
@@ -9,7 +7,7 @@ public enum TEAM
     COUNT
 }
 
-public abstract class Agent : MonoBehaviour
+public abstract class Agent : BehaviourTree
 {
     #region PROTECTED_FIELDS
     protected Genome genome = null;
@@ -23,6 +21,7 @@ public abstract class Agent : MonoBehaviour
     #region PROPERTIES
     public Genome Genome { get => genome; }
     public NeuralNetwork Brain { get => brain; }
+    public float[] Inputs { get => inputs; }
     public float Fitness { get => fitness; }
     #endregion
 
@@ -36,25 +35,19 @@ public abstract class Agent : MonoBehaviour
         OnReset();
     }
 
-    public void OnThink()
-    {
-        ProcessInputs();
-
-        float[] outputs = brain.Synapsis(inputs);
-
-        ProcessOutputs(outputs);
-    }
-
     public void UpdateFitness(float fitness)
     {
         this.fitness *= fitness;
 
-        if (this.fitness < 1f)
-        {
-            this.fitness = 1f;
-        }
-
         genome.fitness = this.fitness;
+    }
+
+    public void SetInput(int index, float value)
+    {
+        if (index >= 0 && index < inputs.Length)
+        {
+            inputs[index] = value;
+        }
     }
     #endregion
 
@@ -63,9 +56,5 @@ public abstract class Agent : MonoBehaviour
     {
         fitness = 1f;
     }
-
-    protected abstract void ProcessInputs();
-
-    protected abstract void ProcessOutputs(float[] outputs);
     #endregion
 }

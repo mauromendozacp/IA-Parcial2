@@ -13,10 +13,18 @@ public class Not : TreeNode
     {
         foreach (TreeNode node in childrens)
         {
-            if (node.Evaluate() != NodeState.RUNNING)
+            switch (node.Evaluate())
             {
-                state = node.State;
-                return state;
+                case NodeState.RUNNING:
+                    break;
+                case NodeState.SUCCESS:
+                    state = NodeState.FAILURE;
+                    return state;
+                case NodeState.FAILURE:
+                    state = NodeState.SUCCESS;
+                    return state;
+                default:
+                    break;
             }
         }
 

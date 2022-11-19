@@ -63,14 +63,16 @@ public class GameplayController : MonoBehaviour
         {
             turnsTimer += Time.deltaTime;
 
-            UpdateMoveChaimbots(turnsTimer / turnsDelay);
+            SetChaimbotsLerp(turnsTimer / turnsDelay);
 
             if (turnsTimer > turnsDelay)
             {
                 turnsTimer = 0f;
 
-                ProcessChaimbots();
+                SetChaimbotsProcess(true);
+                SetNearFoodInChaimbots();
                 ProcessChaimbotsInSameIndex();
+                UpdateChaimbotsTree();
 
                 PopulationManager.Instance.turnsLeft += isLoop ? 1 : -1;
 
@@ -99,8 +101,8 @@ public class GameplayController : MonoBehaviour
 
         PopulationManager.Instance.StartSimulation(chaimbots, dataLoaded);
 
+        SetNearFoodInChaimbots();
         SetChaimbotsPositions();
-        ProcessChaimbots();
 
         isRunning = true;
         isLoop = dataLoaded;
@@ -112,23 +114,47 @@ public class GameplayController : MonoBehaviour
         DestroyFoods();
         SpawnFoods();
 
-        ProcessChaimbotsNextGeneration();
-
+        UpdateChaimbotsGeneration();
         PopulationManager.Instance.Epoch(chaimbots, SpawnNewChaimbots);
 
+        SetNearFoodInChaimbots();
         SetChaimbotsPositions();
-        ProcessChaimbots();
 
         LockedCamera();
     }
 
-    private void UpdateMoveChaimbots(float lerp)
+    private void UpdateChaimbotsGeneration()
     {
-        foreach (Chaimbot chaimbot in chaimbots)
+        for (int i = 0; i < chaimbots.Count; i++)
         {
-            if (!CheckLimitY(chaimbot.Index.y)) continue;
+            chaimbots[i].GenerationCount++;
+        }
+    }
 
-            chaimbot.Move(lerp);
+    private void SetChaimbotsProcess(bool process)
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].Process = process;
+            chaimbots[i].Lerp = 0f;
+            chaimbots[i].UpdateTree();
+        }
+    }
+
+    private void SetChaimbotsLerp(float lerp)
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].Lerp = lerp;
+            chaimbots[i].UpdateTree();
+        }
+    }
+
+    private void UpdateChaimbotsTree()
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].UpdateTree();
         }
     }
 
@@ -173,6 +199,14 @@ public class GameplayController : MonoBehaviour
         }
     }
 
+    private void SetNearFoodInChaimbots()
+    {
+        for (int i = 0; i < chaimbots.Count; i++)
+        {
+            chaimbots[i].SetNearFood(GetNearFood(chaimbots[i].transform.position));
+        }
+    }
+
     private Food GetNearFood(Vector3 position)
     {
         Food nearest = null;
@@ -197,28 +231,17 @@ public class GameplayController : MonoBehaviour
     }
 
     #region PROCESS
-    private void ProcessChaimbots()
-    {
-        for (int i = 0; i < chaimbots.Count; i++)
-        {
-            if (!CheckLimitY(chaimbots[i].Index.y) || chaimbots[i].Dead) continue;
-
-            chaimbots[i].SetNearFood(GetNearFood(chaimbots[i].transform.position));
-            chaimbots[i].Think();
-        }
-    }
-
     private void ProcessChaimbotsInSameIndex()
     {
         Dictionary<Vector2Int, List<Chaimbot>> indexChaimbots = new Dictionary<Vector2Int, List<Chaimbot>>();
         for (int i = 0; i < chaimbots.Count; i++)
         {
-            if (chaimbots[i].Dead || indexChaimbots.ContainsKey(chaimbots[i].Index)) continue;
+            if (chaimbots[i].Dead || chaimbots[i].InOutLimit || indexChaimbots.ContainsKey(chaimbots[i].Index)) continue;
             bool inFoodIndex = CheckIndexInFood(chaimbots[i].Index);
 
             for (int j = 0; j < chaimbots.Count; j++)
             {
-                if (i == j || chaimbots[j].Dead) continue;
+                if (i == j || chaimbots[j].Dead || chaimbots[j].InOutLimit) continue;
 
                 if (chaimbots[i].Index == chaimbots[j].Index || inFoodIndex)
                 {
@@ -256,7 +279,7 @@ public class GameplayController : MonoBehaviour
                             {
                                 if (eatingChaimbots[i].Team == executeTeam)
                                 {
-                                    eatingChaimbots[i].Death();
+                                    eatingChaimbots[i].CanDie = true;
                                 }
                             }
 
@@ -277,13 +300,13 @@ public class GameplayController : MonoBehaviour
                             }
                         }
 
-                        eatingChaimbots[chaimbotEatingIndex].ConsumeFood();
+                        eatingChaimbots[chaimbotEatingIndex].CanEat = true;
                         foodConsumed = true;
                     }
                 }
                 else
                 {
-                    eatingChaimbots[0].ConsumeFood();
+                    eatingChaimbots[0].CanEat = true;
                     foodConsumed = true;
                 }
 
@@ -308,7 +331,7 @@ public class GameplayController : MonoBehaviour
                         int prob = Random.Range(0, 101);
                         if (prob < probabilityToDie)
                         {
-                            chaimbotsCowards[i].Death();
+                            chaimbotsCowards[i].CanDie = true;
                         }
                     }
                 }
@@ -322,19 +345,11 @@ public class GameplayController : MonoBehaviour
                     {
                         if (chaimbotsInSameIndex[i].Team == executeTeam)
                         {
-                            chaimbotsInSameIndex[i].Death();
+                            chaimbotsInSameIndex[i].CanDie = true;
                         }
                     }
                 }
             }
-        }
-    }
-
-    private void ProcessChaimbotsNextGeneration()
-    {
-        for (int i = 0; i < chaimbots.Count; i++)
-        {
-            chaimbots[i].GenerationCount++;
         }
     }
     #endregion
@@ -462,11 +477,6 @@ public class GameplayController : MonoBehaviour
     #endregion
 
     #region CHECKS
-    private bool CheckLimitY(int posY)
-    {
-        return posY >= 0 && posY <= size;
-    }
-
     private bool CheckEndGame()
     {
         return chaimbots.Count == 0 || foods.Count == 0;
@@ -563,7 +573,7 @@ public class GameplayController : MonoBehaviour
         {
             for (int i = 0; i < chaimbots.Count; i++)
             {
-                chaimbots[i].StopMovement();
+                chaimbots[i].SwitchMovement();
             }
         }
     }

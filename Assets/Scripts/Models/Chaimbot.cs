@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using UnityEngine;
 
 public class Chaimbot : Agent
@@ -18,8 +20,16 @@ public class Chaimbot : Agent
 
     #region PRIVATE_FIELDS
     private float unit = 0f;
+
+    private bool process = false;
     private bool dead = false;
+    private bool stop = false;
     private bool toStay = false;
+    private bool inOutLimit = false;
+    private bool canEat = false;
+    private bool canDie = false;
+
+    private float lerp = 0f;
     private int generationCount = 0;
 
     private Food nearFood = null;
@@ -34,19 +44,27 @@ public class Chaimbot : Agent
     private int maxIndex = 0;
     #endregion
 
-    #region CONSTANTS_FIELDS
-    private const string speedKey = "speed";
-    private const string deadKey = "dead";
-    #endregion
-
     #region PROPERTIES
     public Vector2Int Index { get => index; set => index = value; }
-    public int GenerationCount { get => generationCount; set => generationCount = value; }
-    public bool ToStay { get => toStay; set => toStay = value; }
+    public Vector2Int MoveIndex { get => moveIndex; set => moveIndex = value; }
+    public Vector3 StartPosition { get => startPosition; set => startPosition = value; }
+    public Vector3 MovePosition { get => movePosition; set => movePosition = value; }
 
-    public int FoodsConsumed { get => foodsConsumed; }
+    public bool ToStay { get => toStay; set => toStay = value; }
+    public bool InOutLimit { get => inOutLimit; set => inOutLimit = value; }
+    public int GenerationCount { get => generationCount; set => generationCount = value; }
+    public bool Process { get => process; set => process = value; }
+    public float Lerp { get => lerp; set => lerp = value; }
+    public bool CanEat { get => canEat; set => canEat = value; }
+    public bool CanDie { get => canDie; set => canDie = value; }
+    public bool Dead { get => dead; set => dead = value; }
+
+    public bool Stop { get => stop; }
+    public float Unit { get => unit; }
     public TEAM Team { get => team; }
-    public bool Dead { get => dead; }
+
+    public int FoodsConsumed { get => foodsConsumed; set => foodsConsumed = value; }
+    public Food NearFood { get => nearFood; }
     #endregion
 
     #region PUBLIC_METHODS
@@ -58,33 +76,11 @@ public class Chaimbot : Agent
         limitX = size / 2f * unit;
         maxIndex = size;
 
-        generationCount = 0;
+        generationCount = 1;
 
         SetView(team);
-    }
 
-    public void Move(float lerp)
-    {
-        if (dead || toStay) return;
-
-        transform.position = Vector3.Lerp(startPosition, movePosition, lerp);
-
-        animator.SetFloat(speedKey, curve.Evaluate(lerp));
-    }
-
-    public void SetNearFood(Food nearFood)
-    {
-        this.nearFood = nearFood;
-    }
-
-    public void Think()
-    {
-        OnThink();
-    }
-
-    public void StopMovement()
-    {
-        animator.SetFloat(speedKey, 0f);
+        base.Init();
     }
 
     public void ResetData()
@@ -94,83 +90,115 @@ public class Chaimbot : Agent
         startPosition = transform.position;
         movePosition = transform.position;
 
-        generationCount++;
+        lerp = 0f;
+        foodsConsumed = 0;        
+        process = true;
         toStay = false;
+        inOutLimit = false;
+        canEat = false;
+        canDie = false;
 
+        UpdateTree();
         OnReset();
     }
 
-    public void ConsumeFood()
+    public void SwitchMovement()
     {
-        UpdateFitness(nearFood != null && index == nearFood.Index ? consumeNearFoodFitness : consumeFoodFitness);
+        stop = !stop;
 
-        foodsConsumed++;
-
-        PopulationManager.Instance.AddFoodsConsumed(team);
+        UpdateTree();
     }
 
-    public void Death()
+    public void SetNearFood(Food nearFood)
     {
-        dead = true;
-
-        animator.SetTrigger(deadKey);
-
-        PopulationManager.Instance.AddDeaths(team);
+        this.nearFood = nearFood;
     }
     #endregion
 
     #region OVERRIDE_METHODS
-    protected override void ProcessInputs()
+    protected override TreeNode Setup()
     {
-        if (nearFood != null)
+        TreeNode root = new Root(new List<TreeNode>()
         {
-            Vector3 foodPosition = nearFood.transform.position;
-            Vector3 foodDirection = GetDirToFood(foodPosition);
-
-            inputs[0] = foodPosition.x;
-            inputs[1] = foodPosition.z;
-            inputs[2] = foodDirection.x;
-            inputs[3] = foodDirection.z;
-        }
-    }
-
-    protected override void ProcessOutputs(float[] outputs)
-    {
-        if (!toStay)
-        {
-            transform.position = movePosition;
-            startPosition = transform.position;
-            index = moveIndex;
-        }
-
-        if (outputs != null && outputs.Length >= 3)
-        {
-            bool vertical = outputs[0] < 0.5f;
-            float positive = outputs[1] < 0.5f ? -1f : 1f;
-
-            Vector3 dir = new Vector3(vertical ? positive : 0f, 0f, !vertical ? positive : 0f);
-            movePosition = transform.position + dir * unit;
-            transform.forward = dir;
-
-            moveIndex = index + new Vector2Int((int)dir.x, (int)dir.z);
-
-            toStay = outputs[2] < 0.5f;
-
-            UpdatePositionLimit();
-            UpdateIndexLimit();
-
-            if (CheckOutLimitY())
+            new Sequence(new List<TreeNode>()
             {
-                UpdateFitness(outLimitYFitness);
-            }
-        }
-    }
+                new CheckDeadNode(new List<TreeNode>(), this),
+                new CheckLimitYNode(new List<TreeNode>(), this, maxIndex),
 
-    protected override void OnReset()
-    {
-        base.OnReset();
+                new Not(new List<TreeNode>()
+                {
+                    new Sequence(new List<TreeNode>()
+                    {
+                        new CanDieNode(new List<TreeNode>(), this),
+                        new DieNode(new List<TreeNode>(), this, animator)
+                    })
+                }),
 
-        foodsConsumed = 0;
+                new Not(new List<TreeNode>()
+                {
+                    new Sequence(new List<TreeNode>()
+                    {
+                        new CheckStopNode(new List<TreeNode>(), this),
+                        new StopMovementNode(new List<TreeNode>(), animator)
+                    })
+                }),
+
+                new Not(new List<TreeNode>()
+                {
+                    new Sequence(new List<TreeNode>()
+                    {
+                        new CanEatNode(new List<TreeNode>(), this),
+                        new ConsumeFoodNode(new List<TreeNode>(), this, consumeNearFoodFitness, consumeFoodFitness)
+                    })
+                }),
+
+                new Not(new List<TreeNode>()
+                {
+                    new Sequence(new List<TreeNode>()
+                    {
+                        new CheckProcessNode(new List<TreeNode>(), this),
+                        new ProcessInputsNode(new List<TreeNode>(), this),
+
+                        new Not(new List<TreeNode>()
+                        {
+                            new Sequence(new List<TreeNode>()
+                            {
+                                new CheckStayNode(new List<TreeNode>(), this),
+                                new UpdateMovementNode(new List<TreeNode>(), this)
+                            })
+                        }),
+
+                        new ProcessOutputsNode(new List<TreeNode>(), this),
+
+                        new UpdatePositionLimitNode(new List<TreeNode>(), this, limitX, unit),
+                        new UpdateIndexLimitNode(new List<TreeNode>(), this, maxIndex),
+                    })
+                }),
+
+                new Not(new List<TreeNode>()
+                {
+                    new Sequence(new List<TreeNode>()
+                    {
+                        new Not(new List<TreeNode>()
+                        {
+                            new CheckLimitYNode(new List<TreeNode>(), this, maxIndex)
+                        }),
+
+                        new CheckStayNode(new List<TreeNode>(), this),
+                        new OutLimitYNode(new List<TreeNode>(), this, outLimitYFitness)
+                    })
+                }),
+
+                new Sequence(new List<TreeNode>()
+                {
+                    new CheckStayNode(new List<TreeNode>(), this),
+                    new MovementLerpNode(new List<TreeNode>(), this),
+                    new MovementAnimationNode(new List<TreeNode>(), this, animator, curve)
+                })
+            })
+        });
+
+        return root;
     }
     #endregion
 
@@ -185,46 +213,6 @@ public class Chaimbot : Agent
         {
             femaleViews[i].SetActive(team == TEAM.B);
         }
-    }
-
-    private Vector3 GetDirToFood(Vector3 foodPosition)
-    {
-        return (foodPosition - transform.position).normalized;
-    }
-
-    private void UpdatePositionLimit()
-    {
-        Vector3 pos = movePosition;
-        if (pos.x > limitX)
-        {
-            pos.x -= limitX * 2;
-            startPosition = pos - new Vector3(unit, 0f, 0f);
-        }
-        else if (pos.x < -limitX)
-        {
-            pos.x += limitX * 2;
-            startPosition = pos + new Vector3(unit, 0f, 0f);
-        }
-        movePosition = pos;
-    }
-
-    private void UpdateIndexLimit()
-    {
-        Vector2Int auxIndex = moveIndex;
-        if (auxIndex.x > maxIndex)
-        {
-            auxIndex.x = 0;
-        }
-        else if (auxIndex.x < 0)
-        {
-            auxIndex.x = maxIndex;
-        }
-        moveIndex = auxIndex;
-    }
-
-    private bool CheckOutLimitY()
-    {
-        return moveIndex.y < 0 || moveIndex.y > maxIndex;
     }
     #endregion
 }
