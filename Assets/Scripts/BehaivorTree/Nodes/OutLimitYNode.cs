@@ -18,7 +18,7 @@ public class OutLimitYNode : TreeNode
     #region OVERRIDE_METHODS
     public override NodeState Evaluate()
     {
-        chaimbot.UpdateFitness(outLimitYFitness);
+        chaimbot.SetFitness(outLimitYFitness);
         chaimbot.InOutLimit = true;
 
         return NodeState.FAILURE;

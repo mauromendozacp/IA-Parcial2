@@ -132,7 +132,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
         genAlgB = new GeneticAlgorithm(B_EliteCount, B_MutationChance, B_MutationRate);
 
         generation = dataLoaded ? generation : 0;
-        turnsLeft = dataLoaded ? 0 : Turns;
+        turnsLeft = Turns;
 
         bestFitness = 0f;
         avgFitness = 0f;
@@ -214,8 +214,6 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     public void Epoch(List<Chaimbot> chaimbots, Action<Genome[], NeuralNetwork[], TEAM> onCreateNewChaimbots)
     {
-        if (dataLoaded) return;
-
         generation++;
         turnsLeft = Turns;
 

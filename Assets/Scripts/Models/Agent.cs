@@ -38,8 +38,13 @@ public abstract class Agent : BehaviourTree
     public void UpdateFitness(float fitness)
     {
         this.fitness *= fitness;
+        SetGenomeFitness();
+    }
 
-        genome.fitness = this.fitness;
+    public void SetFitness(float fitness)
+    {
+        this.fitness = fitness;
+        SetGenomeFitness();
     }
 
     public void SetInput(int index, float value)
@@ -55,6 +60,13 @@ public abstract class Agent : BehaviourTree
     protected virtual void OnReset()
     {
         fitness = 1f;
+    }
+    #endregion
+
+    #region PRIVATE_METHODS
+    private void SetGenomeFitness()
+    {
+        genome.fitness = fitness;
     }
     #endregion
 }

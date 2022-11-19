@@ -35,7 +35,6 @@ public class GameplayController : MonoBehaviour
 
     private float turnsTimer = 0f;
     private bool isRunning = false;
-    private bool isLoop = false;
     private int currentFollowAgent = 0;
     #endregion
 
@@ -74,9 +73,9 @@ public class GameplayController : MonoBehaviour
                 ProcessChaimbotsInSameIndex();
                 UpdateChaimbotsTree();
 
-                PopulationManager.Instance.turnsLeft += isLoop ? 1 : -1;
+                PopulationManager.Instance.turnsLeft--;
 
-                if (PopulationManager.Instance.turnsLeft <= 0 && !isLoop)
+                if (PopulationManager.Instance.turnsLeft <= 0)
                 {
                     ResetSimulation();
                 }
@@ -105,7 +104,6 @@ public class GameplayController : MonoBehaviour
         SetChaimbotsPositions();
 
         isRunning = true;
-        isLoop = dataLoaded;
         currentFollowAgent = -1;
     }
 
