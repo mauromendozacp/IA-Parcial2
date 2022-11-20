@@ -39,10 +39,6 @@ public class GameplayController : MonoBehaviour
     private int currentFollowAgent = 0;
     #endregion
 
-    #region CONSTANTS
-    private const int probabilityToDie = 75;
-    #endregion
-
     #region UNITY_CALLS
     private void Start()
     {
@@ -137,8 +133,6 @@ public class GameplayController : MonoBehaviour
         bool noWin = chaimbots.Count == 0;
         TEAM winTeam = TEAM.NONE;
 
-        PopulationManager.Instance.UpdateGameplayData();
-
         int countA = GetTeamChaimbotsCount(TEAM.A);
         int countB = GetTeamChaimbotsCount(TEAM.B);
 
@@ -154,7 +148,9 @@ public class GameplayController : MonoBehaviour
             winTeam = TEAM.B;
         }
 
+        PopulationManager.Instance.UpdateGameplayData();
         SwitchMovementChaimbots();
+
         endView.ConfigurePanel(noWin, winTeam, fitnessA, fitnessB);
 
         gameplayView.Toggle(false);
@@ -403,7 +399,7 @@ public class GameplayController : MonoBehaviour
                     for (int i = 0; i < chaimbotsCowards.Count; i++)
                     {
                         int prob = Random.Range(0, 101);
-                        if (prob < probabilityToDie)
+                        if (prob < PopulationManager.Instance.DeathChance)
                         {
                             chaimbotsCowards[i].CanDie = true;
                         }

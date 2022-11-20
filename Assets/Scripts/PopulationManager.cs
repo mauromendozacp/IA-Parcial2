@@ -15,6 +15,8 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
     [Range(1, 500)] public int Turns = 0;
     [Range(1, 100)] public int IterationCount = 0;
     [Range(1, 100)] public int AgentMaxGeneration = 0;
+    [Range(0, 1f)] public float DeathChance = 0f;
+    [Range(1f, 10f)] public float PlusMutationRate = 0f;
 
     [Header("Team A Settings")]
     public int A_EliteCount = 0;
@@ -88,10 +90,6 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
 
     private string dataPath = string.Empty;
     private string fileName = "/Data/brain_data.json";
-    #endregion
-
-    #region CONSTANTS
-    private const float plusMutationRate = 2.5f;
     #endregion
 
     #region UNITY_CALLS
@@ -647,7 +645,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
                 genomesB[i].fitness = 0f;
             }
 
-            GeneticAlgorithm genAlgPlusA = new GeneticAlgorithm(A_EliteCount, A_MutationChance, A_MutationRate * plusMutationRate);
+            GeneticAlgorithm genAlgPlusA = new GeneticAlgorithm(A_EliteCount, A_MutationChance, A_MutationRate * PlusMutationRate);
             Genome[] newGenomesA = genAlgPlusA.Epoch(genomesB.ToArray());
             NeuralNetwork[] brainsA = new NeuralNetwork[newGenomesA.Length];
             for (int i = 0; i < brainsA.Length; i++)
@@ -669,7 +667,7 @@ public class PopulationManager : MonoBehaviourSingleton<PopulationManager>
                 genomesA[i].fitness = 0f;
             }
 
-            GeneticAlgorithm genAlgPlusB = new GeneticAlgorithm(B_EliteCount, B_MutationChance, B_MutationRate * plusMutationRate);
+            GeneticAlgorithm genAlgPlusB = new GeneticAlgorithm(B_EliteCount, B_MutationChance, B_MutationRate * PlusMutationRate);
             Genome[] newGenomesB = genAlgPlusB.Epoch(genomesA.ToArray());
             NeuralNetwork[] brainsB = new NeuralNetwork[newGenomesB.Length];
             for (int i = 0; i < brainsB.Length; i++)

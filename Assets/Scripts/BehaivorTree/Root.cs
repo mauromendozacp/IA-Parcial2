@@ -13,10 +13,18 @@ public class Root : TreeNode
     {
         foreach (TreeNode node in childrens)
         {
-            if (node.Evaluate() != NodeState.FAILURE)
+            switch (node.Evaluate())
             {
-                state = node.State;
-                return state;
+                case NodeState.RUNNING:
+                    state = NodeState.RUNNING;
+                    return state;
+                case NodeState.SUCCESS:
+                    state = NodeState.SUCCESS;
+                    return state;
+                case NodeState.FAILURE:
+                    break;
+                default:
+                    break;
             }
         }
 

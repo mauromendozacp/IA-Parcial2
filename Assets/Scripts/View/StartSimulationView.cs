@@ -16,6 +16,10 @@ public class StartSimulationView : MonoBehaviour
     [SerializeField] private Slider turnsSlider = null;
     [SerializeField] private TMP_Text agentMaxGenerationTxt = null;
     [SerializeField] private Slider agentMaxGenerationSlider = null;
+    [SerializeField] private TMP_Text deathChanceTxt = null;
+    [SerializeField] private Slider deathChanceSlider = null;
+    [SerializeField] private TMP_Text plusMutationRateTxt = null;
+    [SerializeField] private Slider plusMutationRateSlider = null;
 
     [Header("Team A Settings")]
     [SerializeField] private TMP_Text eliteCountATxt = null;
@@ -58,6 +62,8 @@ public class StartSimulationView : MonoBehaviour
     private string populationText = string.Empty;
     private string turnsText = string.Empty;
     private string agentMaxGenerationText = string.Empty;
+    private string deathChanceText = string.Empty;
+    private string plusMutationRateText = string.Empty;
 
     private string elitesAText = string.Empty;
     private string mutationChanceAText = string.Empty;
@@ -82,6 +88,8 @@ public class StartSimulationView : MonoBehaviour
         populationCountSlider.onValueChanged.AddListener(OnPopulationCountChange);
         turnsSlider.onValueChanged.AddListener(OnTurnsChange);
         agentMaxGenerationSlider.onValueChanged.AddListener(OnAgentMaxGenerationChange);
+        deathChanceSlider.onValueChanged.AddListener(OnDeathChanceAChange);
+        plusMutationRateSlider.onValueChanged.AddListener(OnPlusMutationRateChange);
 
         eliteCountASlider.onValueChanged.AddListener(OnEliteCountAChange);
         mutationChanceASlider.onValueChanged.AddListener(OnMutationChanceAChange);
@@ -102,6 +110,8 @@ public class StartSimulationView : MonoBehaviour
         populationText = populationCountTxt.text;
         turnsText = turnsTxt.text;
         agentMaxGenerationText = agentMaxGenerationTxt.text;
+        deathChanceText = deathChanceTxt.text;
+        plusMutationRateText = plusMutationRateTxt.text;
 
         elitesAText = eliteCountATxt.text;
         mutationChanceAText = mutationChanceATxt.text;
@@ -122,6 +132,8 @@ public class StartSimulationView : MonoBehaviour
         populationCountSlider.value = PopulationManager.Instance.PopulationCount;
         turnsSlider.value = PopulationManager.Instance.Turns;
         agentMaxGenerationSlider.value = PopulationManager.Instance.AgentMaxGeneration;
+        deathChanceSlider.value = PopulationManager.Instance.DeathChance * 100f;
+        plusMutationRateSlider.value = PopulationManager.Instance.PlusMutationRate * 10f;
 
         eliteCountASlider.value = PopulationManager.Instance.A_EliteCount;
         mutationChanceASlider.value = PopulationManager.Instance.A_MutationChance * 100.0f;
@@ -142,6 +154,8 @@ public class StartSimulationView : MonoBehaviour
         OnPopulationCountChange(populationCountSlider.value);
         OnTurnsChange(turnsSlider.value);
         OnAgentMaxGenerationChange(agentMaxGenerationSlider.value);
+        OnDeathChanceAChange(deathChanceSlider.value);
+        OnPlusMutationRateChange(plusMutationRateSlider.value);
 
         OnEliteCountAChange(eliteCountASlider.value);
         OnMutationChanceAChange(mutationChanceASlider.value);
@@ -189,6 +203,20 @@ public class StartSimulationView : MonoBehaviour
         PopulationManager.Instance.AgentMaxGeneration = (int)value;
 
         agentMaxGenerationTxt.text = string.Format(agentMaxGenerationText, PopulationManager.Instance.AgentMaxGeneration);
+    }
+
+    private void OnDeathChanceAChange(float value)
+    {
+        PopulationManager.Instance.DeathChance = value / 100.0f;
+
+        deathChanceTxt.text = string.Format(deathChanceText, (int)(PopulationManager.Instance.DeathChance * 100));
+    }
+
+    private void OnPlusMutationRateChange(float value)
+    {
+        PopulationManager.Instance.PlusMutationRate = value / 10.0f;
+
+        plusMutationRateTxt.text = string.Format(plusMutationRateText, (int)(PopulationManager.Instance.PlusMutationRate * 10));
     }
 
     private void OnEliteCountAChange(float value)

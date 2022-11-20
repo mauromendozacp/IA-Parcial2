@@ -49,6 +49,8 @@ MonoBehaviour:
   Turns: 100
   IterationCount: 1
   AgentMaxGeneration: 3
+  DeathChance: 0.75
+  PlusMutationRate: 2.5
   A_EliteCount: 10
   A_MutationChance: 0.5
   A_MutationRate: 0.25
@@ -82,6 +84,12 @@ MonoBehaviour:
   totalChaimbots: 0
   totalFoodsConsumed: 0
   totalDeaths: 0
+  totalChaimbotsA: 0
+  totalFoodsConsumedA: 0
+  totalDeathsA: 0
+  totalChaimbotsB: 0
+  totalFoodsConsumedB: 0
+  totalDeathsB: 0
   chaimbotsA: 0
   foodsA: 0
   deathsA: 0
