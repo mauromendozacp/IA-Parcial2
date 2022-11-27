@@ -54,7 +54,7 @@ MonoBehaviour:
   A_EliteCount: 10
   A_MutationChance: 0.5
   A_MutationRate: 0.25
-  A_InputsCount: 4
+  A_InputsCount: 7
   A_HiddenLayers: 2
   A_OutputsCount: 3
   A_NeuronsCountPerHL: 10
@@ -63,7 +63,7 @@ MonoBehaviour:
   B_EliteCount: 4
   B_MutationChance: 0.1
   B_MutationRate: 0.01
-  B_InputsCount: 4
+  B_InputsCount: 7
   B_HiddenLayers: 1
   B_OutputsCount: 3
   B_NeuronsCountPerHL: 7

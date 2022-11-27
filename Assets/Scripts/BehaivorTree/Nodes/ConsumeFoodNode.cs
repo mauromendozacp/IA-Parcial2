@@ -26,6 +26,7 @@ public class ConsumeFoodNode : TreeNode
 
         chaimbot.FoodsConsumed++;
         chaimbot.CanEat = false;
+        chaimbot.Steps = 0;
 
         PopulationManager.Instance.AddFoodsConsumed(chaimbot.Team);
 

@@ -28,6 +28,7 @@ public class Chaimbot : Agent
     private bool inOutLimit = false;
     private bool canEat = false;
     private bool canDie = false;
+    private int steps = 0;
 
     private float lerp = 0f;
     private int generationCount = 0;
@@ -58,6 +59,7 @@ public class Chaimbot : Agent
     public bool CanEat { get => canEat; set => canEat = value; }
     public bool CanDie { get => canDie; set => canDie = value; }
     public bool Dead { get => dead; set => dead = value; }
+    public int Steps { get => steps; set => steps = value; }
 
     public bool Stop { get => stop; }
     public float Unit { get => unit; }
@@ -91,12 +93,13 @@ public class Chaimbot : Agent
         movePosition = transform.position;
 
         lerp = 0f;
-        foodsConsumed = 0;        
+        foodsConsumed = 0;    
         process = true;
         toStay = false;
         inOutLimit = false;
         canEat = false;
         canDie = false;
+        steps = 0;
 
         UpdateTree();
         OnReset();

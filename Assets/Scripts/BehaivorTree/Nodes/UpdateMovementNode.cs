@@ -19,6 +19,7 @@ public class UpdateMovementNode : TreeNode
         chaimbot.transform.position = chaimbot.MovePosition;
         chaimbot.StartPosition = chaimbot.transform.position;
         chaimbot.Index = chaimbot.MoveIndex;
+        chaimbot.Steps++;
 
         return NodeState.RUNNING;
     }

@@ -24,14 +24,15 @@ public class ProcessOutputsNode : TreeNode
         {
             bool vertical = outputs[0] < 0.5f;
             float positive = outputs[1] < 0.5f ? -1f : 1f;
+            bool stay = outputs[2] < 0.5f;
 
             Vector3 dir = new Vector3(vertical ? positive : 0f, 0f, !vertical ? positive : 0f);
-            chaimbot.MovePosition = chaimbot.transform.position + dir * chaimbot.Unit;
-            chaimbot.transform.forward = dir;
 
+            chaimbot.transform.forward = dir;
+            chaimbot.MovePosition = chaimbot.transform.position + dir * chaimbot.Unit;
             chaimbot.MoveIndex = chaimbot.Index + new Vector2Int((int)dir.x, (int)dir.z);
 
-            chaimbot.ToStay = outputs[2] < 0.5f;
+            chaimbot.ToStay = stay;
 
             chaimbot.Process = false;
         }
